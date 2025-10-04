@@ -2,6 +2,7 @@ import './SignUp.css';
 // Hook de React para guardar y actualizar valores (en este caso, el email del usuario)
 import { useState } from 'react'
 import { client } from '../Supabase/client.js'
+import { Link } from 'react-router-dom';
 
 function Signup() {
     //Para guardar en una variable en react lo que reciba del usuario necesito un state, al inicio es un empty string
@@ -56,6 +57,11 @@ function Signup() {
           onChange={e => setpassword(e.target.value)}
         />
         <button type="submit">Sign Up</button>
+        <div className="login-redirect">
+  <span>Already have an account? </span>
+  <Link to="/login" className="login-link">Log in</Link>
+</div>
+
       </form>
       
 
