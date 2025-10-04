@@ -27,11 +27,7 @@ const LandingPage = () => {
           </div>
 
           <Link to="/login" className="cta-button primary">
-            Earning StreetCred
-          </Link>
-
-          <Link to="/signup" className="cta-button secondary" style={{ marginTop: '12px' }}>
-            Create Account
+            Earning StreetCred →
           </Link>
 
           <div className="info-link">
@@ -42,15 +38,15 @@ const LandingPage = () => {
 
         <div className="features-section">
           <div className="feature">
-            <span className="feature-icon">📍</span>
+            <div className="feature-icon verify">✓</div>
             <span className="feature-text">Verify and report</span>
           </div>
           <div className="feature">
-            <span className="feature-icon">✅</span>
-            <span className="feature-text">Submit report</span>
+            <div className="feature-icon report">↑</div>
+            <span className="feature-text">Report report</span>
           </div>
           <div className="feature">
-            <span className="feature-icon">⭐</span>
+            <div className="feature-icon rewards">★</div>
             <span className="feature-text">Earn rewards</span>
           </div>
         </div>
