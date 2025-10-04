@@ -7,6 +7,9 @@
   
   /* background options: */
   background-image: url('../images/StreetCredLanding.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   /* or background-color: #0e0e0e; */
   /* or background-image: url('../images/login-bg.jpg');
      background-size: cover;
