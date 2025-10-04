@@ -1,0 +1,223 @@
+.verify-hydrant-page {
+  min-height: 100vh;
+  background-color: #ffffff;
+  font-family: system-ui, -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+.hydrant-image {
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f9fafb;
+}
+
+.hydrant-display {
+  width: 200px;
+  height: 200px;
+  background: linear-gradient(135deg, #ff0000, #cc0000);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.hydrant-icon {
+  font-size: 4rem;
+  color: white;
+}
+
+.form-container {
+  flex: 1;
+  padding: 2rem;
+  max-width: 500px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.question-group {
+  margin-bottom: 2rem;
+}
+
+.question {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.answer-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.answer-button {
+  flex: 1;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #333;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.answer-button:hover {
+  border-color: #22c55e;
+  background-color: #f0fdf4;
+}
+
+.answer-button.selected {
+  border-color: #22c55e;
+  background-color: #22c55e;
+  color: white;
+}
+
+.rating-container {
+  margin-top: 1rem;
+}
+
+.rating-bar {
+  width: 100%;
+  height: 8px;
+  background-color: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.rating-fill {
+  height: 100%;
+  background-color: #22c55e;
+  transition: width 0.3s;
+}
+
+.rating-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.rating-slider {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: #e5e7eb;
+  outline: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.rating-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #22c55e;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.rating-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #22c55e;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.photo-upload {
+  margin-bottom: 2rem;
+}
+
+.photo-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  background-color: #ffffff;
+  color: #333;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.photo-button:hover {
+  border-color: #22c55e;
+  background-color: #f0fdf4;
+}
+
+.camera-icon {
+  font-size: 1.25rem;
+}
+
+.photo-input {
+  display: none;
+}
+
+.photo-preview {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background-color: #f0fdf4;
+  border-radius: 4px;
+  color: #16a34a;
+  font-size: 0.875rem;
+}
+
+.cta-button {
+  width: 100%;
+  background-color: #22c55e;
+  color: white;
+  padding: 1rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.cta-button:hover:not(:disabled) {
+  background-color: #16a34a;
+}
+
+.cta-button:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .hydrant-image {
+    padding: 1rem;
+  }
+  
+  .hydrant-display {
+    width: 150px;
+    height: 150px;
+  }
+  
+  .hydrant-icon {
+    font-size: 3rem;
+  }
+  
+  .form-container {
+    padding: 1rem;
+  }
+  
+  .answer-buttons {
+    flex-direction: column;
+  }
+}

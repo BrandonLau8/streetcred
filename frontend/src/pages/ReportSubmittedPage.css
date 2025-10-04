@@ -1,0 +1,196 @@
+.report-submitted-page {
+  min-height: 100vh;
+  background-color: #ffffff;
+  font-family: system-ui, -apple-system, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.success-container {
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+}
+
+.success-icon {
+  margin-bottom: 2rem;
+  position: relative;
+  display: inline-block;
+}
+
+.coin {
+  width: 120px;
+  height: 120px;
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 8px 16px rgba(255, 215, 0, 0.3);
+  animation: coinFloat 2s ease-in-out infinite;
+}
+
+.hydrant-icon {
+  font-size: 3rem;
+  color: #ff0000;
+  z-index: 2;
+}
+
+.sparkles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.sparkle {
+  position: absolute;
+  font-size: 1.5rem;
+  animation: sparkle 1.5s ease-in-out infinite;
+}
+
+.sparkle:nth-child(1) {
+  top: 10px;
+  left: 10px;
+  animation-delay: 0s;
+}
+
+.sparkle:nth-child(2) {
+  top: 10px;
+  right: 10px;
+  animation-delay: 0.3s;
+}
+
+.sparkle:nth-child(3) {
+  bottom: 10px;
+  left: 10px;
+  animation-delay: 0.6s;
+}
+
+.sparkle:nth-child(4) {
+  bottom: 10px;
+  right: 10px;
+  animation-delay: 0.9s;
+}
+
+@keyframes coinFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.success-message {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 1.5rem;
+}
+
+.points-earned {
+  margin-bottom: 2rem;
+}
+
+.points-number {
+  display: block;
+  font-size: 4rem;
+  font-weight: bold;
+  color: #22c55e;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.points-text {
+  font-size: 1.25rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.next-goal {
+  background-color: #f0f9ff;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  border-left: 4px solid #22c55e;
+}
+
+.goal-text {
+  font-size: 1.1rem;
+  color: #333;
+  font-weight: 500;
+}
+
+.cta-button {
+  display: inline-block;
+  background-color: #f3f4f6;
+  color: #333;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: background-color 0.3s;
+  border: 1px solid #d1d5db;
+}
+
+.cta-button:hover {
+  background-color: #e5e7eb;
+}
+
+.cta-button.secondary {
+  background-color: #f3f4f6;
+  color: #333;
+}
+
+.cta-button.secondary:hover {
+  background-color: #e5e7eb;
+}
+
+@media (max-width: 480px) {
+  .success-container {
+    padding: 1rem;
+  }
+  
+  .coin {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .hydrant-icon {
+    font-size: 2.5rem;
+  }
+  
+  .success-message {
+    font-size: 1.75rem;
+  }
+  
+  .points-number {
+    font-size: 3rem;
+  }
+  
+  .points-text {
+    font-size: 1.1rem;
+  }
+  
+  .goal-text {
+    font-size: 1rem;
+  }
+}

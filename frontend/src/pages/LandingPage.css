@@ -1,0 +1,191 @@
+.landing-page {
+  min-height: 100vh;
+  background-color: #ffffff;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.header {
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.logo-icon {
+  font-size: 1.8rem;
+}
+
+.main-content {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.hero-section {
+  margin-bottom: 3rem;
+}
+
+.hero-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 2rem;
+  line-height: 1.2;
+}
+
+.hero-illustration {
+  margin: 2rem 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+}
+
+.person-illustration {
+  position: relative;
+}
+
+.person {
+  font-size: 4rem;
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.phone {
+  font-size: 2rem;
+  position: absolute;
+  right: -10px;
+  top: 10px;
+}
+
+.map-illustration {
+  position: relative;
+  background: #f0f0f0;
+  width: 200px;
+  height: 120px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.map-pin {
+  font-size: 1.5rem;
+  color: #ff0000;
+}
+
+.hydrant {
+  font-size: 2rem;
+  position: absolute;
+  top: 20px;
+  right: 30px;
+}
+
+.cta-button {
+  display: inline-block;
+  background-color: #22c55e;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin: 1rem 0;
+  transition: background-color 0.3s;
+}
+
+.cta-button:hover {
+  background-color: #16a34a;
+}
+
+.info-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.info-link a {
+  color: #22c55e;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.arrow {
+  color: #22c55e;
+  font-size: 1.2rem;
+}
+
+.features-section {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  margin: 3rem 0;
+  flex-wrap: wrap;
+}
+
+.feature {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.feature-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.feature-text {
+  font-size: 1rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.incentive-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: #f0f9ff;
+  padding: 1rem;
+  border-radius: 8px;
+  color: #333;
+  font-weight: 500;
+}
+
+.badge-icon {
+  font-size: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+  
+  .features-section {
+    gap: 2rem;
+  }
+  
+  .hero-illustration {
+    flex-direction: column;
+    gap: 1rem;
+  }
+}
