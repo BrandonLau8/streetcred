@@ -30,6 +30,10 @@ const LandingPage = () => {
             Earning StreetCred
           </Link>
 
+          <Link to="/signup" className="cta-button secondary" style={{ marginTop: '12px' }}>
+            Create Account
+          </Link>
+
           <div className="info-link">
             <Link to="/how-it-works">See how it works</Link>
             <span className="arrow">→</span>

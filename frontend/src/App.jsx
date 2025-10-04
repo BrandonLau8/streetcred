@@ -2,12 +2,13 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import LandingPage from './pages/LandingPage';
-import LoginPage from './pages/LoginPage';
+import Login from './pages/LoginPage';
 import ProfilePage from './pages/ProfilePage';
 import MapPage from './pages/MapPage';
 import VerifyInfrastructurePage from './pages/VerifyInfrastructurePage';
 import ReportSubmittedPage from './pages/ReportSubmittedPage';
 import './App.css';
+import Signup from './pages/SignUp';
 
 function App() {
   return (
@@ -16,7 +17,8 @@ function App() {
         <div className="app">
           <Routes>
             <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
             <Route 
               path="/profile" 
               element={
