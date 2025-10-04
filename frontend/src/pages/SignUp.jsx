@@ -38,36 +38,39 @@ function Signup() {
 
     return (
         <>
-        <div className="main-site">
-            <h2>WELCOME</h2>
-            {/* En el evento del formulario, osea cuando le doy a submit voy a llamar a mi funcion llamada handleSubmit */}
-            <form onSubmit={handleSubmit}>
-                <input 
-                    type="email" 
-                    placeholder="youremail@site.com" 
-                    required
-                    //lo que se tipee como input setemail lo va a guardar en nuestra variable 'email' de arriba 
-                    onChange={e => setemail(e.target.value)}
-                />
-                <input 
-                    type="password" 
-                    placeholder="Enter password" 
-                    required
-                    //lo que se tipee como input setpassword lo va a guardar en nuestra variable 'password' de arriba 
-                    onChange={e => setpassword(e.target.value)}
-                />
-                <button type="submit">Sign Up</button>
-            </form>
-                {showPopup && (
-                <div className="popup-overlay">
-                    <div className="popup">
-                        <p>Check your email to confirm signup!</p>
-                        <button onClick={() => setShowPopup(false)}>Close</button>
-                    </div>
-                </div>
-                )}
+  <div className="signup-page">    {/* Background container */}
+    <div className="main-site">    {/* Card container */}
+      <h2>Nice To Meet You!</h2>
+
+      <form onSubmit={handleSubmit}>
+        <input 
+          type="email" 
+          placeholder="youremail@site.com" 
+          required
+          onChange={e => setemail(e.target.value)}
+        />
+        <input 
+          type="password" 
+          placeholder="Enter password" 
+          required
+          onChange={e => setpassword(e.target.value)}
+        />
+        <button type="submit">Sign Up</button>
+      </form>
+      
+
+      {showPopup && (
+        <div className="popup-overlay">
+          <div className="popup">
+            <p>Check your email to confirm signup!</p>
+            <button onClick={() => setShowPopup(false)}>Close</button>
+          </div>
         </div>
-        </>
+      )}
+    </div>
+  </div>
+</>
+
     )
 }
 

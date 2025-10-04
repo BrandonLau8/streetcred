@@ -1,4 +1,4 @@
-.main-site {
+/* .main-site {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -105,4 +105,50 @@ form button:hover {
 
 .popup button:hover {
     background: #16a34a;
+} */
+ /* Full-page background */
+.signup-page {
+  min-height: 100vh;
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Background options — pick one: */
+  /*background: linear-gradient(135deg, #82c751, #2a411a);
+  /* background-color: #0e0e0e; */
+  background-image: url('../images/StreetCredLanding.png');
+     background-size: cover;
+     background-position: center; 
+}
+
+/* Signup card */
+.main-site {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+}
+
+/* Optional: style inputs/buttons nicely */
+.main-site input {
+  width: 100%;
+  padding: 0.8rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.main-site button {
+  width: 100%;
+  padding: 0.8rem;
+  border: none;
+  border-radius: 8px;
+  background: #83e140;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
 }

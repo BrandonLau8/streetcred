@@ -29,28 +29,31 @@ function Login() {
     return (
         <>
         
-        <div className="main-site">
-            <h2>NICE TO SEE YOU AGAIN!</h2>
+                <div className="login-page">   {/* background container */}
+        <div className="main-site">  {/* the actual card */}
+            <h2>Welcome Back!</h2>
             <form className="auth-form" onSubmit={handleSubmit}>
-                <input 
-                    type="email" 
-                    placeholder="Email" 
-                    required
-                    onChange={e => setemail(e.target.value)}
-                />
-                <input 
-                    type="password" 
-                    placeholder="Password" 
-                    required
-                    onChange={e => setpassword(e.target.value)}
-                />
-                <button type="submit">Log In</button>
+            <input 
+                type="email" 
+                placeholder="Email" 
+                required
+                onChange={e => setemail(e.target.value)}
+            />
+            <input 
+                type="password" 
+                placeholder="Password" 
+                required
+                onChange={e => setpassword(e.target.value)}
+            />
+            <button type="submit">Log In</button>
             </form>
-              <div className="signup-redirect">
-                <span>Don't have an account? </span>
-                <Link to="/signup" className="signup-link">Sign up</Link>
+            <div className="signup-redirect">
+            <span>Don't have an account? </span>
+            <Link to="/signup" className="signup-link">Sign up</Link>
             </div>
         </div>
+        </div>
+
         </>
         
     )
