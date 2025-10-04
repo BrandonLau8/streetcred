@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './ProfilePage.css';
+import Navbar from "../components/navbar.jsx"
 
 const ProfilePage = () => {
   const { user, logout } = useAuth();
@@ -20,10 +21,12 @@ const ProfilePage = () => {
   ];
 
   return (
+    <>
+    <Navbar/>
     <div className="profile-page">
       <header className="header">
         <Link to="/map" className="back-button">
-          <span className="back-arrow">←</span>
+          <span className="back-arrow"> Map </span>
         </Link>
         <div className="logo">
           <span className="logo-icon">📍</span>
@@ -79,6 +82,7 @@ const ProfilePage = () => {
         </div>
       </main>
     </div>
+    </>
   );
 };
 

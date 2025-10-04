@@ -20,7 +20,7 @@ const LandingPage = () => {
           </Link>
 
           <div className="info-link">
-            <Link to="/how-it-works">See how it works</Link>
+            <Link to="/about">See how it works</Link>
             <span className="arrow">→</span>
           </div>
         </div>
