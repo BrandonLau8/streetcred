@@ -1,25 +1,61 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import './LoginPage.css';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle login logic here
-    console.log('Login attempt:', { email, password });
+    // Simulate login - in real app, this would call your backend
+    const userData = {
+      id: 1,
+      name: 'Alex',
+      email: email,
+      points: 1820,
+      streak: 7,
+      totalReports: 12,
+      coverageArea: 'Downtown'
+    };
+    
+    login(userData);
+    navigate('/profile');
   };
 
   const handleGoogleLogin = () => {
-    // Handle Google login
-    console.log('Google login');
+    // Simulate Google login
+    const userData = {
+      id: 1,
+      name: 'Alex',
+      email: 'alex@gmail.com',
+      points: 1820,
+      streak: 7,
+      totalReports: 12,
+      coverageArea: 'Downtown'
+    };
+    
+    login(userData);
+    navigate('/profile');
   };
 
   const handleGitHubLogin = () => {
-    // Handle GitHub login
-    console.log('GitHub login');
+    // Simulate GitHub login
+    const userData = {
+      id: 1,
+      name: 'Alex',
+      email: 'alex@github.com',
+      points: 1820,
+      streak: 7,
+      totalReports: 12,
+      coverageArea: 'Downtown'
+    };
+    
+    login(userData);
+    navigate('/profile');
   };
 
   return (

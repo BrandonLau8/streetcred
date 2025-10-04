@@ -33,9 +33,8 @@
   animation: coinFloat 2s ease-in-out infinite;
 }
 
-.hydrant-icon {
+.infrastructure-icon {
   font-size: 3rem;
-  color: #ff0000;
   z-index: 2;
 }
 

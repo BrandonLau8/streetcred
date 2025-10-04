@@ -69,16 +69,19 @@
   transform: scale(1.1);
 }
 
-.hydrant-marker {
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+.infrastructure-marker {
   width: 50px;
   height: 50px;
-  background-color: #ff0000;
   border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(255, 0, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   border: 3px solid white;
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.infrastructure-marker:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .marker-icon {
@@ -116,34 +119,53 @@
   border-radius: 50%;
 }
 
-.action-section {
+.infrastructure-types {
   padding: 2rem;
-  display: flex;
-  justify-content: center;
+  text-align: center;
 }
 
-.cta-button {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  background-color: #22c55e;
-  color: white;
-  padding: 1rem 2rem;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.cta-button:hover {
-  background-color: #16a34a;
-}
-
-.button-icon {
+.infrastructure-types h3 {
+  margin-bottom: 1.5rem;
+  color: #333;
   font-size: 1.25rem;
+}
+
+.type-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.type-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  background-color: #ffffff;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.type-button:hover {
+  border-color: #22c55e;
+  background-color: #f0fdf4;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.type-icon {
+  font-size: 2rem;
+}
+
+.type-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #333;
 }
 
 @media (max-width: 768px) {

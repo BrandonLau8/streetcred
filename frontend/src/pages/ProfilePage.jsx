@@ -1,13 +1,14 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import './ProfilePage.css';
 
 const ProfilePage = () => {
-  const user = {
-    name: 'Alex',
-    points: 1820,
-    streak: 7,
-    totalReports: 12,
-    coverageArea: 'Downtown'
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
   };
 
   const badges = [
@@ -67,9 +68,14 @@ const ProfilePage = () => {
             </div>
           </div>
 
-          <Link to="/leaderboard" className="cta-button secondary">
-            View leaderboard
-          </Link>
+          <div className="action-buttons">
+            <Link to="/leaderboard" className="cta-button secondary">
+              View leaderboard
+            </Link>
+            <button onClick={handleLogout} className="cta-button logout">
+              Logout
+            </button>
+          </div>
         </div>
       </main>
     </div>
