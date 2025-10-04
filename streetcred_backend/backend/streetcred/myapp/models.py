@@ -7,7 +7,7 @@ class Location(models.Model):
     """Model for storing locations with geohash"""
     name = models.CharField(max_length=255)
     lat = models.FloatField()
-    lng = models.FloatField()
+    lon = models.FloatField()
     geohash = models.CharField(max_length=12, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -21,8 +21,8 @@ class Location(models.Model):
 
     def save(self, *args, **kwargs):
         # Auto-generate geohash on save
-        if self.lat and self.lng:
-            self.geohash = pgh.encode(self.lat, self.lng, precision=9)
+        if self.lat and self.lon:
+            self.geohash = pgh.encode(self.lat, self.lon, precision=9)
         super().save(*args, **kwargs)
 
     def __str__(self):

@@ -33,8 +33,9 @@ def map_view(request):
     # Convert to list of dicts for template
     locations = [
         {
+            "id": loc.id,
             "lat": loc.lat,
-            "lng": loc.lng,
+            "lon": loc.lon,
             "name": loc.name,
             "geohash": loc.geohash,
             "type": "location"
@@ -47,25 +48,46 @@ def map_view(request):
         supabase = get_supabase_client()
         hydrants_response = supabase.table('hydrants').select('*').execute()
 
+        print(f"DEBUG: Fetched {len(hydrants_response.data)} hydrants from Supabase")
+        print(f"DEBUG: Sample hydrant data: {hydrants_response.data[:2] if hydrants_response.data else 'None'}")
+
         # Add hydrants to locations list
+        hydrants_added = 0
         for hydrant in hydrants_response.data:
+            lat = hydrant.get('lat') or hydrant.get('latitude')
+            lng = hydrant.get('lon') or hydrant.get('longitude') or hydrant.get('longitude')
+
+            # Skip hydrants with invalid coordinates
+            if lat is None or lng is None:
+                print(f"DEBUG: Skipping hydrant with missing coords: {hydrant}")
+                continue
+
             # Generate geohash for hydrants
-            geohash = pgh.encode(hydrant.get('lat', 0), hydrant.get('lng', 0), precision=7)
+            geohash = pgh.encode(float(lat), float(lng), precision=7)
             locations.append({
-                "lat": hydrant.get('lat'),
-                "lng": hydrant.get('lng'),
-                "name": hydrant.get('name', 'Hydrant'),
+                "id": hydrant.get('id'),
+                "lat": float(lat),
+                "lon": float(lng),
+                "name": hydrant.get('name') or hydrant.get('id') or 'Hydrant',
                 "geohash": geohash,
                 "type": "hydrant"
             })
+            hydrants_added += 1
+
+        print(f"DEBUG: Added {hydrants_added} hydrants to map")
     except Exception as e:
         # If Supabase fails, just skip hydrants and continue with locations
-        print(f"Warning: Could not fetch hydrants from Supabase: {e}")
+        print(f"ERROR: Could not fetch hydrants from Supabase: {e}")
+        import traceback
+        traceback.print_exc()
 
     # Create base map centered on all markers
-    if locations:
-        center_lat = sum(loc['lat'] for loc in locations) / len(locations)
-        center_lng = sum(loc['lng'] for loc in locations) / len(locations)
+    # Filter out any locations with None coordinates
+    valid_locations = [loc for loc in locations if loc.get('lat') is not None and loc.get('lon') is not None]
+
+    if valid_locations:
+        center_lat = sum(loc['lat'] for loc in valid_locations) / len(valid_locations)
+        center_lng = sum(loc['lon'] for loc in valid_locations) / len(valid_locations)
     else:
         # Default to San Francisco if no locations
         center_lat, center_lng = 37.7749, -122.4194
@@ -77,8 +99,8 @@ def map_view(request):
         tiles='OpenStreetMap'
     )
 
-    # Add markers for each location
-    for loc in locations:
+    # Add markers for each valid location
+    for loc in valid_locations:
         # Different icons for different types
         if loc.get('type') == 'hydrant':
             icon_color = 'blue'
@@ -90,7 +112,7 @@ def map_view(request):
             marker_type = '📍 Location'
 
         folium.Marker(
-            location=[loc['lat'], loc['lng']],
+            location=[loc['lat'], loc['lon']],
             popup=f"<b>{marker_type}</b><br><b>{loc['name']}</b><br>Geohash: {loc['geohash']}",
             tooltip=loc['name'],
             icon=folium.Icon(color=icon_color, icon=icon_name)
@@ -114,9 +136,16 @@ def map_view(request):
     # Get map HTML
     map_html = m._repr_html_()
 
+    # Count how many of each type
+    location_count = sum(1 for loc in valid_locations if loc.get('type') == 'location')
+    hydrant_count = sum(1 for loc in valid_locations if loc.get('type') == 'hydrant')
+
+    print(f"DEBUG FINAL: Rendering {location_count} locations and {hydrant_count} hydrants")
+    print(f"DEBUG FINAL: Total valid_locations: {len(valid_locations)}")
+
     context = {
         'map_html': map_html,
-        'locations': locations
+        'locations': valid_locations
     }
 
     return render(request, 'myapp/map.html', context)
@@ -131,16 +160,16 @@ def add_location(request):
         data = json.loads(request.body)
 
         lat = float(data.get('lat'))
-        lng = float(data.get('lng'))
+        lon = float(data.get('lon'))
         name = data.get('name', 'New Location')
 
         # Save to database
-        location = Location.objects.create(lat=lat, lng=lng, name=name)
+        location = Location.objects.create(lat=lat, lon=lon, name=name)
 
         return JsonResponse({
             'status': 'success',
             'geohash': location.geohash,
-            'location': {'lat': lat, 'lng': lng, 'name': name}
+            'location': {'lat': lat, 'lon': lon, 'name': name}
         })
 
     return JsonResponse({'status': 'error', 'message': 'POST required'}, status=400)

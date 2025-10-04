@@ -2,14 +2,21 @@ from supabase import create_client, Client
 from django.conf import settings
 from django.http import JsonResponse
 
+# Singleton instance
+_supabase_client = None
+
 def get_supabase_client() -> Client:
-    """Create Supabase client with proper SSL handling"""
-    try:
-        # Create client with default settings
-        return create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
-    except Exception as e:
-        print(f"Error creating Supabase client: {e}")
-        raise
+    """Get or create a singleton Supabase client instance"""
+    global _supabase_client
+
+    if _supabase_client is None:
+        try:
+            _supabase_client = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+        except Exception as e:
+            print(f"Error creating Supabase client: {e}")
+            raise
+
+    return _supabase_client
 
 
 def get_users(request):

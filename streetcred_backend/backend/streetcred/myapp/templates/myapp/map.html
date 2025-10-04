@@ -98,9 +98,10 @@
             <h3>Locations ({{ locations|length }})</h3>
             {% for location in locations %}
             <div class="location-card">
-                <h3>{{ location.name }}</h3>
+                <h3>ID: {{ location.id }}</h3>
+                <!-- <h3>{{ location.name }}</h3> -->
                 <p>📍 Lat: {{ location.lat|floatformat:6 }}</p>
-                <p>📍 Lng: {{ location.lng|floatformat:6 }}</p>
+                <p>📍 Lng: {{ location.lon|floatformat:6 }}</p>
             </div>
             {% endfor %}
         </div>
@@ -133,7 +134,7 @@
                 body: JSON.stringify({
                     name: name,
                     lat: lat,
-                    lng: lng
+                    lon: lng  // Send as "lon" to match API schema
                 })
             })
             .then(response => response.json())
