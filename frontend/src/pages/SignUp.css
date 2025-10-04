@@ -1,198 +1,108 @@
-.signup-page {
-  min-height: 100vh;
-  background-color: #ffffff;
-  font-family: system-ui, -apple-system, sans-serif;
-  position: relative;
-  max-width: 400px;
-  margin: 0 auto;
-  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+.main-site {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: #ffffff;
+    font-family: system-ui, -apple-system, sans-serif;
+    max-width: 400px;
+    margin: 0 auto;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    padding: 2rem;
+    position: relative;
 }
 
-.header {
-  padding: 1rem 2rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  z-index: 2;
+h2 {
+    color: #333;
+    margin-bottom: 2rem;
+    font-weight: bold;
+    font-size: 2rem;
+    text-align: center;
 }
 
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #333;
+form {
+    background: #fff;
+    padding: 32px 28px;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-width: 320px;
+    width: 100%;
 }
 
-.logo-icon {
-  font-size: 1.8rem;
+form input {
+    padding: 12px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.2s;
 }
 
-.main-content {
-  padding: 2rem;
-  max-width: 400px;
-  margin: 0 auto;
-  text-align: left;
-  position: relative;
-  z-index: 2;
+form input:focus {
+    border-color: #22c55e;
 }
 
-.page-title {
-  font-size: 2rem;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 2rem;
-  text-align: center;
+form button {
+    padding: 12px 0;
+    background: #22c55e;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
 }
 
-.signup-form {
-  margin-bottom: 2rem;
+form button:hover {
+    background: #16a34a;
 }
 
-.input-group {
-  margin-bottom: 1.5rem;
-  position: relative;
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
 }
 
-.input-group label {
-  display: block;
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
+.popup {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+    text-align: center;
+    max-width: 300px;
+    width: 90%;
 }
 
-.input-group input {
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 16px;
-  outline: none;
-  transition: border-color 0.2s;
-  box-sizing: border-box;
+.popup p {
+    margin-bottom: 1.5rem;
+    color: #333;
+    font-size: 1rem;
 }
 
-.input-group input:focus {
-  border-color: #22c55e;
+.popup button {
+    padding: 10px 20px;
+    background: #22c55e;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
 }
 
-.signup-button {
-  width: 100%;
-  padding: 12px 0;
-  background: #22c55e;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.signup-button:hover {
-  background: #16a34a;
-}
-
-.divider {
-  text-align: center;
-  margin: 2rem 0;
-  position: relative;
-}
-
-.divider::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: #d1d5db;
-}
-
-.divider span {
-  background: #fff;
-  padding: 0 1rem;
-  color: #666;
-  font-size: 0.9rem;
-}
-
-.social-login {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 2rem;
-}
-
-.social-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  padding: 12px 16px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  background: #fff;
-  color: #333;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.social-button:hover {
-  background: #f9fafb;
-}
-
-.google-icon {
-  width: 20px;
-  height: 20px;
-  background: #4285f4;
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 12px;
-}
-
-.github-icon {
-  font-size: 16px;
-}
-
-.login-link {
-  text-align: center;
-  margin-bottom: 2rem;
-  font-size: 0.9rem;
-  color: #666;
-}
-
-.login-link a {
-  color: #22c55e;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.login-link a:hover {
-  text-decoration: underline;
-}
-
-.badge-promotion {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  background-color: #f0f9ff;
-  padding: 1rem;
-  border-radius: 8px;
-  color: #333;
-  font-weight: 500;
-  font-size: 0.9rem;
-}
-
-.badge-icon {
-  font-size: 1.2rem;
+.popup button:hover {
+    background: #16a34a;
 }
