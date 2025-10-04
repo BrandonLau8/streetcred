@@ -25,6 +25,8 @@ body {
   z-index: 10;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  font-family: 'Overpass', Verdana, Arial, sans-serif;
+  font-size: 1.1rem;
 }
 
 .navbar-nav {
@@ -36,6 +38,7 @@ body {
 
 .navbar-links {
   list-style: none;
+  
   display: flex;
   gap: 2rem;
   margin: 0;
