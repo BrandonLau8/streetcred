@@ -9,6 +9,7 @@ import VerifyInfrastructurePage from './pages/VerifyInfrastructurePage';
 import ReportSubmittedPage from './pages/ReportSubmittedPage';
 import './App.css';
 import Signup from './pages/SignUp';
+import About from './pages/About';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/about" element={<About />} />
             <Route 
               path="/profile" 
               element={

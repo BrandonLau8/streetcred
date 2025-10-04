@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './MapPage.css';
+import Navbar from "../components/navbar.jsx"
 
 const MapPage = () => {
   const navigate = useNavigate();
@@ -21,11 +22,10 @@ const MapPage = () => {
   };
 
   return (
+    <>
+    <Navbar />
     <div className="map-page">
-      <div className="quest-prompt">
-        <span className="quest-icon">⭐</span>
-        <span className="quest-text">Quest near you: Verify infrastructure!</span>
-      </div>
+
 
       <div className="map-container">
         <div className="map">
@@ -62,6 +62,7 @@ const MapPage = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
