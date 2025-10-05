@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { client } from "../Supabase/client.js";
+import { API_BASE_URL } from '../config.js';
 import Navbar from "../components/navbar.jsx";
 import UserBadges from "../components/UserBadges.jsx";
 import BadgeProgress from "../components/BadgeProgress.jsx";
@@ -56,7 +57,7 @@ const ProfilePage = () => {
       const fetchBadges = async () => {
          try {
             const response = await fetch(
-               `http://localhost:8000/api/badges/user-badges/${user.id}`
+               `${API_BASE_URL}/api/badges/user-badges/${user.id}`
             );
             if (response.ok) {
                const data = await response.json();

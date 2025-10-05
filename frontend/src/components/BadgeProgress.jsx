@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config.js';
 import './BadgeProgress.css';
 
 const BadgeProgress = ({ userId }) => {
@@ -18,7 +19,7 @@ const BadgeProgress = ({ userId }) => {
       console.log('Fetching progress for user:', userId);
       try {
         setLoading(true);
-        const response = await fetch(`http://localhost:8000/api/badges/badge-progress/${userId}`);
+        const response = await fetch(`${API_BASE_URL}/api/badges/badge-progress/${userId}`);
 
         if (!response.ok) {
           throw new Error(`Failed to fetch progress: ${response.statusText}`);
