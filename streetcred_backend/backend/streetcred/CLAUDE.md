@@ -51,6 +51,8 @@ python manage.py shell
 - **Database**: SQLite (development), with Supabase integration for user management
 - **Geospatial**: pygeohash/python-geohash for location-based queries
 - **Visualization**: Folium for interactive map rendering
+- **AI Integration**: Google Gemini AI for image generation and location identification
+- **Storage**: Supabase Storage for badge images
 - **Package Manager**: uv (see uv.lock)
 
 ### Project Structure
@@ -62,6 +64,9 @@ python manage.py shell
   - `views.py`: Map visualization and location management (function-based views)
   - `auth.py`: Supabase authentication functions (signup/signin)
   - `api.py`: Django Ninja API endpoints (not yet integrated into urls.py)
+  - `locater.py`: NYC neighborhood identification from coordinates using Gemini AI
+  - `google_imggen.py`: Automated badge image generation using Gemini AI
+  - `upload_image.py`: Upload generated images to Supabase Storage and badges table
   - `templates/myapp/map.html`: Folium map template
 
 ### Geohashing Implementation
@@ -83,6 +88,11 @@ facilities = db.query("SELECT * FROM facilities WHERE geohash LIKE $1", f"{area_
 - Credentials loaded from `.env` file (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY)
 - Client initialized via `get_supabase_client()` helper function
 - User data queries in `views.py` also use Supabase tables
+- **Storage Buckets**:
+  - `badges`: Stores generated badge images (public bucket)
+- **Tables**:
+  - `badges`: Stores badge metadata (id, animal, location_name, image_url)
+  - RLS policies configured for public read/write access
 
 ### API Architecture Note
 There's a discrepancy between the defined API endpoints:
@@ -94,6 +104,7 @@ There's a discrepancy between the defined API endpoints:
 The project uses python-dotenv to load configuration from `.env` file. Required variables:
 - `NEXT_PUBLIC_SUPABASE_URL`: Supabase project URL
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Supabase anonymous key
+- `GOOGLE_API_KEY`: Google Gemini AI API key for image generation and location identification
 
 ### Database Schema
 Location model stores geospatial data with indexes on:
@@ -116,6 +127,41 @@ Map views use Folium with custom markers and drawing tools. The map_view functio
 3. Adds markers with geohash information in popups
 4. Includes drawing tools plugin for adding new markers
 5. Renders to HTML via `_repr_html_()`
+
+### Location Identification
+The `locater.py` module identifies NYC neighborhoods from GPS coordinates:
+```python
+from myapp.locater import identify_location
+
+location = identify_location(40.7580, -73.9855)  # Returns "Times Square"
+```
+- Uses Google Gemini AI with 41 NYC neighborhood reference coordinates
+- Optimized prompt with examples for accurate location matching
+- Returns the most specific/granular neighborhood name
+
+### Badge Generation Workflow
+The badge generation system creates location-based character badges:
+
+1. **Image Generation** (`google_imggen.py`):
+   - Generates cartoon character badges (rat, pigeon, squirrel, etc.) for NYC locations
+   - Uses Gemini AI image generation model (`gemini-2.5-flash-image`)
+   - Supports batch generation for multiple locations and animals
+   - Saves images to `gen_images/` folder with naming convention: `{Location_Name}_{animal}.png`
+
+2. **Upload to Supabase** (`upload_image.py`):
+   - Uploads images from `gen_images/` to Supabase Storage bucket `badges`
+   - Extracts location and animal from filename automatically
+   - Inserts metadata into `badges` table with public image URL
+   - Supports batch processing of all images in folder
+
+Example usage:
+```python
+# Generate badges
+python myapp/google_imggen.py
+
+# Upload to Supabase
+python myapp/upload_image.py
+```
 
 ### Migrating to Django Ninja APIs
 When transitioning from function-based views to Django Ninja:
