@@ -1,15 +1,21 @@
 import os
 from dotenv import load_dotenv
-from supabase import create_client, Client
 import random
 from myapp.locater import identify_location
 
 load_dotenv()
 
-# Initialize Supabase client
-supabase_url = os.getenv("NEXT_PUBLIC_SUPABASE_URL")
-supabase_key = os.getenv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
-supabase: Client = create_client(supabase_url, supabase_key)
+# Lazy load Supabase client to avoid SSL errors on module import
+_supabase = None
+
+def _get_supabase():
+    global _supabase
+    if _supabase is None:
+        from supabase import create_client
+        supabase_url = os.getenv("NEXT_PUBLIC_SUPABASE_URL")
+        supabase_key = os.getenv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+        _supabase = create_client(supabase_url, supabase_key)
+    return _supabase
 
 
 def get_next_milestone(points: int) -> int:
@@ -53,6 +59,7 @@ def award_badges_for_points(user_id: str, new_points: int, latitude: float, long
         }
 
     # Check which milestones already have badges awarded
+    supabase = _get_supabase()
     existing_badges = supabase.table("user_badges")\
         .select("milestone")\
         .eq("user_id", user_id)\
@@ -106,6 +113,7 @@ def award_badges_for_points(user_id: str, new_points: int, latitude: float, long
 def get_user_badges(user_id: str) -> list:
     """Get all badges earned by a user"""
 
+    supabase = _get_supabase()
     result = supabase.table("user_badges")\
         .select("*, badges(*)")\
         .eq("user_id", user_id)\
@@ -130,6 +138,7 @@ def update_user_points(user_id: str, points_to_add: int, latitude: float, longit
     """
 
     # Get current points
+    supabase = _get_supabase()
     profile = supabase.table("profiles")\
         .select("points")\
         .eq("user_id", user_id)\

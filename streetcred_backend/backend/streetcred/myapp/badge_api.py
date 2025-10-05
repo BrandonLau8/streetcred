@@ -95,9 +95,10 @@ def get_badge_progress(request, user_id: str):
     """
     Get user's badge earning progress
     """
-    from myapp.badge_rewards import supabase, get_next_milestone, get_earned_milestones
+    from myapp.badge_rewards import _get_supabase, get_next_milestone, get_earned_milestones
 
     # Get current points
+    supabase = _get_supabase()
     profile = supabase.table("profiles")\
         .select("points")\
         .eq("user_id", user_id)\
