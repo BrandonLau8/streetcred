@@ -1,37 +1,109 @@
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import Navbar from '../components/navbar.jsx';
+import { useAuth } from '../contexts/AuthContext';
+import { client } from '../Supabase/client';
 import './VerifyInfrastructurePage.css';
 
 const VerifyInfrastructurePage = () => {
   const [searchParams] = useSearchParams();
   const infrastructureType = searchParams.get('type') || 'hydrant';
+  const hydrantId = searchParams.get('hydrantId');
+  const lat = searchParams.get('lat');
+  const lng = searchParams.get('lng');
   const navigate = useNavigate();
+  const { user } = useAuth();
   
+  // Form state
+  const [generalCondition, setGeneralCondition] = useState(null);
   const [isFunctional, setIsFunctional] = useState(null);
-  const [condition, setCondition] = useState(5);
+  const [description, setDescription] = useState('');
   const [photo, setPhoto] = useState(null);
-  const [description, setDescription] = useState(''); // 🆕 descripción
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
 
   const infrastructureTypes = {
-    hydrant: { name: 'Fire Hydrant', icon: '🚰', color: '#ff0000', questions: ['Is this hydrant functional?', 'Is the hydrant\'s paint in good condition?'] },
-    'traffic-light': { name: 'Traffic Light', icon: '🚦', color: '#ffa500', questions: ['Is this traffic light working?', 'Are all lights functioning properly?'] },
-    'stop-sign': { name: 'Stop Sign', icon: '🛑', color: '#ff0000', questions: ['Is this stop sign visible?', 'Is the sign in good condition?'] },
-    pothole: { name: 'Pothole', icon: '🕳️', color: '#8b4513', questions: ['Is this pothole dangerous?', 'How severe is the damage?'] },
-    streetlight: { name: 'Street Light', icon: '💡', color: '#ffff00', questions: ['Is this street light working?', 'Is the light bright enough?'] },
-    crosswalk: { name: 'Crosswalk', icon: '🚶', color: '#ffffff', questions: ['Is this crosswalk visible?', 'Are the markings clear?'] }
+    hydrant: { name: 'Fire Hydrant', icon: '🚰', color: '#ff0000' },
+    pothole: { name: 'Pothole', icon: '🕳️', color: '#8b4513' },
+    streetlight: { name: 'Street Light', icon: '💡', color: '#ffff00' }
   };
 
   const currentType = infrastructureTypes[infrastructureType] || infrastructureTypes.hydrant;
 
-  const handleSubmit = () => {
-    console.log('Infrastructure verification:', {
-      type: infrastructureType,
-      isFunctional,
-      condition,
-      description, // 🆕 incluimos descripción en el log
-      photo
-    });
-    navigate(`/report-submitted?type=${infrastructureType}`);
+  const conditionOptions = [
+    { value: 'great', label: 'Great', color: '#22c55e', icon: '✅' },
+    { value: 'okay', label: 'Okay', color: '#f59e0b', icon: '⚠️' },
+    { value: 'bad', label: 'Bad', color: '#ef4444', icon: '❌' }
+  ];
+
+  const handleSubmit = async () => {
+    if (!user) {
+      setSubmitError('You must be logged in to submit a report');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      // Prepare the report data
+      const reportData = {
+        user_id: user.id,
+        lat: parseFloat(lat),
+        lon: parseFloat(lng),
+        description: description || null,
+        image_url: null, // Will be updated if photo is uploaded
+        itemid: hydrantId || null,
+        type: infrastructureType,
+        condition: generalCondition,
+        functional: isFunctional ? 'Yes' : 'No',
+        neighborhood: null // Leaving blank as requested
+      };
+
+      // Upload photo if provided
+      if (photo) {
+        const fileExt = photo.name.split('.').pop();
+        const fileName = `${user.id}_${Date.now()}.${fileExt}`;
+        const filePath = `reports/${fileName}`;
+
+        // Upload to Supabase Storage
+        const { error: uploadError } = await client.storage
+          .from('reports')
+          .upload(filePath, photo);
+
+        if (uploadError) {
+          console.error('Photo upload error:', uploadError);
+          // Continue without photo if upload fails
+        } else {
+          // Get public URL
+          const { data: { publicUrl } } = client.storage
+            .from('reports')
+            .getPublicUrl(filePath);
+          reportData.image_url = publicUrl;
+        }
+      }
+
+      // Insert report into database
+      const { data, error } = await client
+        .from('reports')
+        .insert([reportData])
+        .select();
+
+      if (error) {
+        console.error('Database error:', error);
+        setSubmitError('Failed to submit report. Please try again.');
+        return;
+      }
+
+      console.log('Report submitted successfully:', data);
+      navigate(`/report-submitted?type=${infrastructureType}&reportId=${data[0].id}`);
+
+    } catch (error) {
+      console.error('Submit error:', error);
+      setSubmitError('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handlePhotoUpload = (e) => {
@@ -39,102 +111,138 @@ const VerifyInfrastructurePage = () => {
     if (file) setPhoto(file);
   };
 
-  return (
-    <div className="verify-infrastructure-page">
-      <div className="infrastructure-image">
-        <div className="infrastructure-display" style={{ backgroundColor: currentType.color }}>
-          <span className="infrastructure-icon">{currentType.icon}</span>
-        </div>
-        <h2 className="infrastructure-title">{currentType.name}</h2>
-      </div>
+  const isFormValid = generalCondition !== null && isFunctional !== null;
 
-      <div className="form-container">
-        {/* Pregunta 1 */}
-        <div className="question-group">
-          <h3 className="question">{currentType.questions[0]}</h3>
-          <div className="answer-buttons">
-            <button
-              className={`answer-button ${isFunctional === true ? 'selected' : ''}`}
-              onClick={() => setIsFunctional(true)}
-            >
-              Yes
-            </button>
-            <button
-              className={`answer-button ${isFunctional === false ? 'selected' : ''}`}
-              onClick={() => setIsFunctional(false)}
-            >
-              No
-            </button>
+  return (
+    <>
+      <Navbar />
+      <div className="verify-infrastructure-page">
+        {/* Header Section */}
+        <div className="verify-header">
+          <div className="infrastructure-display" style={{ backgroundColor: currentType.color }}>
+            <span className="infrastructure-icon">{currentType.icon}</span>
+          </div>
+          <div className="header-info">
+            <h1 className="infrastructure-title">{currentType.name}</h1>
+            {hydrantId && (
+              <p className="infrastructure-id">ID: {hydrantId}</p>
+            )}
+            {lat && lng && (
+              <p className="infrastructure-location">
+                📍 {parseFloat(lat).toFixed(6)}, {parseFloat(lng).toFixed(6)}
+              </p>
+            )}
           </div>
         </div>
 
-        {/* Pregunta 2 */}
-        <div className="question-group">
-          <h3 className="question">{currentType.questions[1]}</h3>
-          <div className="rating-container">
-            <div className="rating-bar">
-              <div 
-                className="rating-fill"
-                style={{ width: `${(condition / 10) * 100}%` }}
-              ></div>
+        {/* Form Section */}
+        <div className="verify-form">
+          {/* Step 1: General Condition */}
+          <div className="form-step">
+            <h2 className="step-title">Step 1: General Condition</h2>
+            <p className="step-description">How would you rate the overall condition?</p>
+            <div className="condition-options">
+              {conditionOptions.map((option) => (
+                <button
+                  key={option.value}
+                  className={`condition-button ${generalCondition === option.value ? 'selected' : ''}`}
+                  onClick={() => setGeneralCondition(option.value)}
+                  style={{ 
+                    borderColor: generalCondition === option.value ? option.color : '#e5e7eb',
+                    backgroundColor: generalCondition === option.value ? `${option.color}15` : 'white'
+                  }}
+                >
+                  <span className="condition-icon">{option.icon}</span>
+                  <span className="condition-label">{option.label}</span>
+                </button>
+              ))}
             </div>
-            <div className="rating-labels">
-              <span>Poor</span>
-              <span>Excellent</span>
+          </div>
+
+          {/* Step 2: Functionality */}
+          <div className="form-step">
+            <h2 className="step-title">Step 2: Functionality</h2>
+            <p className="step-description">Does it look functional?</p>
+            <div className="functionality-options">
+              <button
+                className={`functionality-button ${isFunctional === true ? 'selected yes' : ''}`}
+                onClick={() => setIsFunctional(true)}
+              >
+                <span className="functionality-icon">✅</span>
+                <span className="functionality-label">Yes</span>
+              </button>
+              <button
+                className={`functionality-button ${isFunctional === false ? 'selected no' : ''}`}
+                onClick={() => setIsFunctional(false)}
+              >
+                <span className="functionality-icon">❌</span>
+                <span className="functionality-label">No</span>
+              </button>
             </div>
-            <input
-              type="range"
-              min="1"
-              max="10"
-              value={condition}
-              onChange={(e) => setCondition(parseInt(e.target.value))}
-              className="rating-slider"
+          </div>
+
+          {/* Step 3: Description */}
+          <div className="form-step">
+            <h2 className="step-title">Step 3: Description</h2>
+            <p className="step-description">Tell us more about what you observed</p>
+            <textarea
+              className="description-input"
+              placeholder="Describe the condition, any issues you noticed, or additional details..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={4}
             />
           </div>
-        </div>
 
-        {/* 🆕 Campo de descripción */}
-        <div className="description-section">
-          <h3 className="question">Add a description (optional)</h3>
-          <textarea
-            className="description-input"
-            placeholder="Describe what you observed..."
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={4}
-          />
-        </div>
-
-        {/* Subida de foto */}
-        <div className="photo-upload">
-          <label htmlFor="photo-upload" className="photo-button">
-            <span className="camera-icon">📷</span>
-            Photo
-          </label>
-          <input
-            id="photo-upload"
-            type="file"
-            accept="image/*"
-            onChange={handlePhotoUpload}
-            className="photo-input"
-          />
-          {photo && (
-            <div className="photo-preview">
-              <span className="photo-name">{photo.name}</span>
+          {/* Step 4: Photo (Optional) */}
+          <div className="form-step">
+            <h2 className="step-title">Step 4: Photo (Optional)</h2>
+            <p className="step-description">Add a photo to support your report</p>
+            <div className="photo-upload">
+              <label htmlFor="photo-upload" className="photo-button">
+                <span className="camera-icon">📷</span>
+                <span className="photo-text">
+                  {photo ? 'Change Photo' : 'Add Photo'}
+                </span>
+              </label>
+              <input
+                id="photo-upload"
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                className="photo-input"
+              />
+              {photo && (
+                <div className="photo-preview">
+                  <span className="photo-name">📎 {photo.name}</span>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
 
-        {/* Botón Report */}
-        <button 
-          onClick={handleSubmit}
-          className="cta-button primary"
-          disabled={isFunctional === null}
-        >
-          Report
-        </button>
+          {/* Submit Button */}
+          <div className="submit-section">
+            <button 
+              onClick={handleSubmit}
+              className={`submit-button ${isFormValid && !isSubmitting ? 'enabled' : 'disabled'}`}
+              disabled={!isFormValid || isSubmitting}
+            >
+              {isSubmitting ? 'Submitting...' : 'Submit Report'}
+            </button>
+            {!isFormValid && !isSubmitting && (
+              <p className="validation-message">
+                Please complete all required steps to submit your report
+              </p>
+            )}
+            {submitError && (
+              <p className="error-message">
+                {submitError}
+              </p>
+            )}
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
