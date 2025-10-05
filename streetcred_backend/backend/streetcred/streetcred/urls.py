@@ -16,11 +16,17 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.http import JsonResponse
 from myapp import views
 from myapp.api import api
 from myapp.badge_api import api as badge_api
 
+def health_check(request):
+    """Health check endpoint for deployment platforms"""
+    return JsonResponse({"status": "ok"})
+
 urlpatterns = [
+    path('', health_check, name='health_check'),  # Root health check
     path('admin/', admin.site.urls),
     path('api/', api.urls),  # Django Ninja API endpoints
     path('api/badges/', badge_api.urls),  # Badge rewards API
