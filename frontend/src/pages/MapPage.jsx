@@ -1,17 +1,130 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import './MapPage.css';
 import Navbar from "../components/navbar.jsx"
+
+// Fix for default markers in react-leaflet
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: markerIcon2x,
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+});
+
+// Custom user location icon
+const userLocationIcon = new L.Icon({
+  iconUrl: 'data:image/svg+xml;base64,' + btoa(`
+    <svg width="25" height="25" viewBox="0 0 25 25" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12.5" cy="12.5" r="10" fill="#22c55e" stroke="white" stroke-width="3"/>
+      <circle cx="12.5" cy="12.5" r="4" fill="white"/>
+    </svg>
+  `),
+  iconSize: [25, 25],
+  iconAnchor: [12.5, 12.5],
+  popupAnchor: [0, -12.5],
+});
 
 const MapPage = () => {
   const navigate = useNavigate();
   const [selectedInfrastructure, setSelectedInfrastructure] = useState(null);
+  const [userLocation, setUserLocation] = useState(null);
+  const [locationError, setLocationError] = useState(null);
+  const [isTracking, setIsTracking] = useState(false);
+  const watchIdRef = useRef(null);
 
   const infrastructureTypes = [
     { id: 'hydrant', name: 'Fire Hydrant', icon: '🚰', color: '#ff0000' },
     { id: 'pothole', name: 'Pothole', icon: '🕳️', color: '#8b4513' },
     { id: 'streetlight', name: 'Street Light', icon: '💡', color: '#ffff00' }
   ];
+
+  // Get user's current location
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationError('Geolocation is not supported by this browser.');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const location = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+          accuracy: position.coords.accuracy
+        };
+        setUserLocation(location);
+        setLocationError(null);
+        console.log('Current location:', location);
+      },
+      (error) => {
+        console.error('Error getting location:', error);
+        setLocationError(`Location error: ${error.message}`);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000 // 5 minutes
+      }
+    );
+  };
+
+  // Start watching user's location for real-time updates
+  const startLocationTracking = () => {
+    if (!navigator.geolocation) {
+      setLocationError('Geolocation is not supported by this browser.');
+      return;
+    }
+
+    setIsTracking(true);
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      (position) => {
+        const location = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+          accuracy: position.coords.accuracy
+        };
+        setUserLocation(location);
+        setLocationError(null);
+        console.log('Location updated:', location);
+      },
+      (error) => {
+        console.error('Error tracking location:', error);
+        setLocationError(`Location tracking error: ${error.message}`);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 10000 // 10 seconds for real-time updates
+      }
+    );
+  };
+
+  // Stop watching user's location
+  const stopLocationTracking = () => {
+    if (watchIdRef.current) {
+      navigator.geolocation.clearWatch(watchIdRef.current);
+      watchIdRef.current = null;
+      setIsTracking(false);
+    }
+  };
+
+  // Initialize location on component mount
+  useEffect(() => {
+    getCurrentLocation();
+    startLocationTracking();
+
+    // Cleanup on unmount
+    return () => {
+      stopLocationTracking();
+    };
+  }, []);
 
   const handleVerifyInfrastructure = (type) => {
     setSelectedInfrastructure(type);
@@ -22,27 +135,73 @@ const MapPage = () => {
     <>
     <Navbar />
     <div className="map-page">
-
-
-      <div className="map-container">
-        <div className="map">
-          {infrastructureTypes.map((type, index) => (
-            <div 
-              key={type.id}
-              className="map-marker infrastructure-marker"
-              style={{
-                top: `${20 + (index * 15)}%`,
-                left: `${20 + (index * 12)}%`,
-                backgroundColor: type.color
-              }}
-              onClick={() => handleVerifyInfrastructure(type)}
-            >
-              <span className="marker-icon">{type.icon}</span>
-            </div>
-          ))}
-        </div>
+      {/* Location Status */}
+      <div className="location-status">
+        {locationError ? (
+          <div className="error-message">
+            {locationError}
+            <button onClick={getCurrentLocation} className="retry-button">
+              Retry
+            </button>
+          </div>
+        ) : userLocation ? (
+          <div className="location-info">
+            <span className="tracking-indicator">
+              {isTracking ? '🟢' : '🔴'} Location Tracking: {isTracking ? 'Active' : 'Inactive'}
+            </span>
+            <span className="coordinates">
+              {userLocation.lat.toFixed(6)}, {userLocation.lng.toFixed(6)}
+            </span>
+            <span className="accuracy">
+              Accuracy: ±{Math.round(userLocation.accuracy)}m
+            </span>
+          </div>
+        ) : (
+          <div className="loading-location">
+            Getting your location...
+          </div>
+        )}
       </div>
 
+      {/* Leaflet Map */}
+      <div className="map-container">
+        {userLocation ? (
+          <MapContainer
+            center={[userLocation.lat, userLocation.lng]}
+            zoom={16}
+            style={{ height: '500px', width: '100%' }}
+            className="leaflet-map"
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            
+            {/* User Location Marker */}
+            <Marker 
+              position={[userLocation.lat, userLocation.lng]} 
+              icon={userLocationIcon}
+            >
+              <Popup>
+                <div>
+                  <strong>Your Location</strong><br/>
+                  Lat: {userLocation.lat.toFixed(6)}<br/>
+                  Lng: {userLocation.lng.toFixed(6)}<br/>
+                  Accuracy: ±{Math.round(userLocation.accuracy)}m
+                </div>
+              </Popup>
+            </Marker>
+          </MapContainer>
+        ) : (
+          <div className="map-placeholder">
+            <div className="loading-map">
+              Loading map...
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Infrastructure Types */}
       <div className="infrastructure-types">
         <h3>Select infrastructure to verify:</h3>
         <div className="type-grid">
