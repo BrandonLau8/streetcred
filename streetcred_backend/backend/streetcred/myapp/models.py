@@ -27,3 +27,24 @@ class Location(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.geohash})"
+
+
+class Report(models.Model):
+    """Model for user-submitted location reports"""
+    user_id = models.UUIDField()  # References Supabase profiles table
+    lat = models.FloatField()
+    lon = models.FloatField()
+    description = models.TextField()
+    image_url = models.TextField(null=True, blank=True)  # Optional image from Supabase Storage
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'reports'
+        indexes = [
+            models.Index(fields=['user_id']),
+            models.Index(fields=['created_at']),
+            models.Index(fields=['user_id', '-created_at']),
+        ]
+
+    def __str__(self):
+        return f"Report by {self.user_id} at ({self.lat}, {self.lon}) - {self.created_at}"

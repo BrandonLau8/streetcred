@@ -8,6 +8,7 @@ api = NinjaAPI(
     title="StreetCred API",
     description="API for location-based civic engagement",
     version="1.0.0",
+    urls_namespace="main",
     docs_url="/docs",
     openapi_url="/openapi.json"
 )
