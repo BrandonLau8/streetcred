@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 from supabase import create_client, Client
 import random
+from myapp.locater import identify_location
 
 load_dotenv()
 
@@ -23,13 +24,15 @@ def get_earned_milestones(points: int) -> list[int]:
     return [i * 5 for i in range(1, (points // 5) + 1)]
 
 
-def award_badges_for_points(user_id: str, new_points: int) -> dict:
+def award_badges_for_points(user_id: str, new_points: int, latitude: float, longitude: float) -> dict:
     """
     Award badges to user based on points milestones
 
     Args:
         user_id: User's profile ID
         new_points: User's new point total
+        latitude: User's current latitude
+        longitude: User's current longitude
 
     Returns:
         dict: {
@@ -62,16 +65,20 @@ def award_badges_for_points(user_id: str, new_points: int) -> dict:
 
     new_badges = []
 
+    # Get location name from coordinates
+    location_name = identify_location(latitude, longitude)
+
     # Award a random badge for each missing milestone
     for milestone in missing_milestones:
-        # Get random badge from badges table
-        all_badges = supabase.table("badges")\
+        # Get badges for this location
+        location_badges = supabase.table("badges")\
             .select("*")\
+            .eq("location_name", location_name)\
             .execute()
 
-        if all_badges.data:
-            # Randomly select a badge
-            selected_badge = random.choice(all_badges.data)
+        if location_badges.data:
+            # Randomly select a badge (random animal) from this location
+            selected_badge = random.choice(location_badges.data)
 
             # Create user_badge record
             user_badge = supabase.table("user_badges").insert({
@@ -108,13 +115,15 @@ def get_user_badges(user_id: str) -> list:
     return result.data
 
 
-def update_user_points(user_id: str, points_to_add: int) -> dict:
+def update_user_points(user_id: str, points_to_add: int, latitude: float, longitude: float) -> dict:
     """
     Update user points and award badges if milestones reached
 
     Args:
         user_id: User's profile ID
         points_to_add: Points to add to current total
+        latitude: User's current latitude
+        longitude: User's current longitude
 
     Returns:
         dict: Updated profile with badge info
@@ -137,7 +146,7 @@ def update_user_points(user_id: str, points_to_add: int) -> dict:
         .execute()
 
     # Award badges for new milestones
-    badge_result = award_badges_for_points(user_id, new_points)
+    badge_result = award_badges_for_points(user_id, new_points, latitude, longitude)
 
     return {
         "user_id": user_id,
@@ -154,7 +163,8 @@ if __name__ == "__main__":
     test_user_id = "30c9d0b1-d84d-43ad-aa72-006cdda9c500"
 
     # Add 15 points (should trigger badges at 5, 10, 15)
-    result = update_user_points(test_user_id, 15)
+    # Using Times Square coordinates as example
+    result = update_user_points(test_user_id, 15, 40.7580, -73.9855)
     print(f"Points updated: {result['new_points']}")
     print(f"New badges earned: {len(result['new_badges'])}")
     print(f"Next milestone at: {result['next_milestone']} points")

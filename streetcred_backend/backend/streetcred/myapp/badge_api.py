@@ -9,6 +9,8 @@ api = NinjaAPI(urls_namespace='badges')
 class AddPointsRequest(Schema):
     user_id: str
     points: int
+    latitude: float
+    longitude: float
 
 
 class BadgeInfo(Schema):
@@ -46,20 +48,26 @@ def add_points(request, payload: AddPointsRequest):
     """
     Add points to user and automatically award badges at milestones
 
+    Badges are awarded based on user's current location
     Milestones: Every 5 points (5, 10, 15, 20, etc.)
     """
-    result = update_user_points(payload.user_id, payload.points)
+    result = update_user_points(
+        payload.user_id,
+        payload.points,
+        payload.latitude,
+        payload.longitude
+    )
     return result
 
 
 @api.post("/check-milestones")
-def check_milestones(request, user_id: str, points: int):
+def check_milestones(request, user_id: str, points: int, latitude: float, longitude: float):
     """
     Check and award any missing badges for user's current points
 
     Useful for backfilling badges if points were added outside the system
     """
-    result = award_badges_for_points(user_id, points)
+    result = award_badges_for_points(user_id, points, latitude, longitude)
     return result
 
 
@@ -68,12 +76,18 @@ def get_badges(request, user_id: str):
     """
     Get all badges earned by a user
     """
-    badges = get_user_badges(user_id)
-    return {
-        "user_id": user_id,
-        "total_badges": len(badges),
-        "badges": badges
-    }
+    try:
+        badges = get_user_badges(user_id)
+        return {
+            "user_id": user_id,
+            "total_badges": len(badges),
+            "badges": badges
+        }
+    except Exception as e:
+        print(f"Error in get_badges: {e}")
+        import traceback
+        traceback.print_exc()
+        raise
 
 
 @api.get("/badge-progress/{user_id}")
