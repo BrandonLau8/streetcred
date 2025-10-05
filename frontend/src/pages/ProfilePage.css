@@ -1,8 +1,19 @@
 .profile-page {
   min-height: 100vh;
-  background-color: #ffffff;
+  background: url('../../images/ProfileBackground.png') no-repeat center center;
+  background-size: cover;
   font-family: system-ui, -apple-system, sans-serif;
   padding-top: 80px;
+  position: relative;
+  z-index: 0;
+}
+
+.profile-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.5); /* white with 50% transparency */
+  z-index: -1; /* places it behind content but above the background image */
 }
 
 .header {
