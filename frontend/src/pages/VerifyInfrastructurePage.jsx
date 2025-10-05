@@ -4,6 +4,7 @@ import Navbar from '../components/navbar.jsx';
 import { useAuth } from '../contexts/AuthContext';
 import { client } from '../Supabase/client';
 import { identifyNeighborhood } from '../services/locationService';
+import { addPoints } from '../services/badgesAPI';
 import './VerifyInfrastructurePage.css';
 
 const VerifyInfrastructurePage = () => {
@@ -126,7 +127,44 @@ const VerifyInfrastructurePage = () => {
       }
 
       console.log('Report submitted successfully:', data);
-      navigate(`/report-submitted?type=${infrastructureType}&reportId=${data[0].id}`);
+
+      // Add points to user account
+      const pointsToAdd = 1; // Standard points for infrastructure report
+      const pointsResult = await addPoints(
+        user.id,
+        pointsToAdd,
+        parseFloat(lat),
+        parseFloat(lng)
+      );
+
+      if (pointsResult.success) {
+        console.log('Points added successfully:', pointsResult.data);
+        console.log(`Earned ${pointsResult.data.points_added} points!`);
+        console.log(`Total points: ${pointsResult.data.new_points}`);
+
+        // Check if new badges were earned
+        if (pointsResult.data.new_badges && pointsResult.data.new_badges.length > 0) {
+          console.log('New badges earned:', pointsResult.data.new_badges);
+
+          // Navigate to badge earned page with badge data
+          const mostRecentBadge = pointsResult.data.new_badges[pointsResult.data.new_badges.length - 1];
+          navigate('/badge-earned', {
+            state: {
+              badge: mostRecentBadge.badge,
+              milestone: mostRecentBadge.milestone,
+              points: pointsResult.data.points_added,
+              totalPoints: pointsResult.data.new_points
+            }
+          });
+        } else {
+          // Navigate to regular success page (no badges earned)
+          navigate(`/report-submitted2?type=${infrastructureType}&reportId=${data[0].id}&points=${pointsResult.data.points_added}`);
+        }
+      } else {
+        console.error('Failed to add points:', pointsResult.error);
+        // Still navigate to success page even if points API fails
+        navigate(`/report-submitted2?type=${infrastructureType}&reportId=${data[0].id}`);
+      }
 
     } catch (error) {
       console.error('Submit error:', error);

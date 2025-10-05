@@ -8,6 +8,8 @@ import MapPage from './pages/MapPage';
 import VerifyInfrastructurePage from './pages/VerifyInfrastructurePage';
 
 import ReportSubmittedPage from './pages/ReportSubmittedPage';
+import ReportSubmittedPage2 from './pages/ReportSubmittedPage2';
+import BadgeEarned from './pages/BadgeEarned';
 import './App.css';
 import Signup from './pages/SignUp';
 import About from './pages/About';
@@ -34,6 +36,8 @@ function App() {
             <Route path="/verify-infrastructure" element={<VerifyInfrastructurePage />} />
 
             <Route path="/report-submitted" element={<ReportSubmittedPage />} />
+            <Route path="/report-submitted2" element={<ReportSubmittedPage2 />} />
+            <Route path="/badge-earned" element={<BadgeEarned />} />
           </Routes>
         </div>
       </Router>
