@@ -163,8 +163,7 @@ if __name__ == "__main__":
     test_user_id = "30c9d0b1-d84d-43ad-aa72-006cdda9c500"
 
     # Add 15 points (should trigger badges at 5, 10, 15)
-    # Using Times Square coordinates as example
-    result = update_user_points(test_user_id, 15, 40.7580, -73.9855)
+    result = update_user_points(test_user_id, 15)
     print(f"Points updated: {result['new_points']}")
     print(f"New badges earned: {len(result['new_badges'])}")
     print(f"Next milestone at: {result['next_milestone']} points")

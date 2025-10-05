@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -37,18 +38,19 @@ const userLocationIcon = new L.Icon({
 // Component to automatically center map when location changes
 const MapCenter = ({ center }) => {
   const map = useMap();
-  
+
   useEffect(() => {
     if (center) {
       map.setView(center, map.getZoom());
     }
   }, [center, map]);
-  
+
   return null;
 };
 
 const MapPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [selectedInfrastructure, setSelectedInfrastructure] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
   const [locationError, setLocationError] = useState(null);
@@ -57,10 +59,6 @@ const MapPage = () => {
   const [hydrantsLoading, setHydrantsLoading] = useState(false);
   const [hydrantsError, setHydrantsError] = useState(null);
   const watchIdRef = useRef(null);
-
-  // TODO: Replace with actual user ID from your authentication system
-  // For example: const { userId } = useAuth();
-  const [userId, setUserId] = useState("a1f30266-3ffc-49d3-8ea5-fb3f78a79361");
 
   const infrastructureTypes = [
     { id: 'hydrant', name: 'Fire Hydrant', icon: '🚰', color: '#ff0000' },
@@ -88,12 +86,26 @@ const MapPage = () => {
       },
       (error) => {
         console.error('Error getting location:', error);
-        setLocationError(`Location error: ${error.message}`);
+        let errorMessage = '';
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = 'Location permission denied. Please enable location access in your browser settings.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = 'Location information unavailable. Please try again.';
+            break;
+          case error.TIMEOUT:
+            errorMessage = 'Location request timed out. Please try again.';
+            break;
+          default:
+            errorMessage = `Location error: ${error.message}`;
+        }
+        setLocationError(errorMessage);
       },
       {
         enableHighAccuracy: true,
         timeout: 10000,
-        maximumAge: 300000 // 5 minutes
+        maximumAge: 0 // Don't use cached position for initial request
       }
     );
   };
@@ -119,7 +131,22 @@ const MapPage = () => {
       },
       (error) => {
         console.error('Error tracking location:', error);
-        setLocationError(`Location tracking error: ${error.message}`);
+        let errorMessage = '';
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = 'Location tracking denied. Please enable location access.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = 'Location tracking unavailable.';
+            break;
+          case error.TIMEOUT:
+            errorMessage = 'Location tracking timed out.';
+            break;
+          default:
+            errorMessage = `Location tracking error: ${error.message}`;
+        }
+        setLocationError(errorMessage);
+        setIsTracking(false);
       },
       {
         enableHighAccuracy: true,
@@ -167,7 +194,7 @@ const MapPage = () => {
     if (userLocation) {
       fetchHydrants(userLocation.lat, userLocation.lng, 0.5);
     }
-  }, [userLocation]); // This will trigger whenever userLocation changes
+  }, [userLocation]);
 
   // Initialize location on component mount
   useEffect(() => {
@@ -204,8 +231,22 @@ const MapPage = () => {
   };
 
   const handleVerifyInfrastructure = (type) => {
+    if (!userLocation) {
+      setLocationError('Please wait for your location to be determined before verifying infrastructure.');
+      return;
+    }
+
     setSelectedInfrastructure(type);
-    navigate(`/verify-infrastructure?type=${type.id}`);
+    // Pass location data via navigation state
+    navigate(`/verify-infrastructure?type=${type.id}`, {
+      state: {
+        userLocation: {
+          lat: userLocation.lat,
+          lng: userLocation.lng,
+          accuracy: userLocation.accuracy
+        }
+      }
+    });
   };
 
   // Handle hydrant click - only allow if within 100ft (30.48m)
@@ -251,6 +292,7 @@ const MapPage = () => {
             <span className="hydrants-count">
               {hydrantsLoading ? 'Loading hydrants...' : `${hydrants.length} hydrants nearby`}
             </span>
+
             <span className="hydrants-in-range">
               {hydrantsLoading ? '' : `${hydrants.filter(h => h.distance_meters <= 30.48).length} within 100ft`}
             </span>
@@ -258,6 +300,9 @@ const MapPage = () => {
         ) : (
           <div className="loading-location">
             Getting your location...
+            <button onClick={getCurrentLocation} className="retry-button">
+              Refresh Location
+            </button>
           </div>
         )}
       </div>
@@ -307,10 +352,10 @@ const MapPage = () => {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            
+
             {/* User Location Marker */}
-            <Marker 
-              position={[userLocation.lat, userLocation.lng]} 
+            <Marker
+              position={[userLocation.lat, userLocation.lng]}
               icon={userLocationIcon}
             >
               <Popup>
@@ -318,7 +363,29 @@ const MapPage = () => {
                   <strong>Your Location</strong><br/>
                   Lat: {userLocation.lat.toFixed(6)}<br/>
                   Lng: {userLocation.lng.toFixed(6)}<br/>
-                  Accuracy: ±{Math.round(userLocation.accuracy)}m
+                  Accuracy: ±{Math.round(userLocation.accuracy)}m<br/>
+                  <button
+                    onClick={() => navigate('/verify-user-infrastructure?type=hydrant', {
+                      state: {
+                        userLocation: {
+                          lat: userLocation.lat,
+                          lng: userLocation.lng,
+                          accuracy: userLocation.accuracy
+                        }
+                      }
+                    })}
+                    style={{
+                      marginTop: '10px',
+                      padding: '8px 16px',
+                      backgroundColor: '#3498db',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '5px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Submit Report Here
+                  </button>
                 </div>
               </Popup>
             </Marker>
@@ -387,10 +454,10 @@ const MapPage = () => {
       </div>
 
       {/* Badge Progress */}
-      <BadgeProgress userId={userId} />
+      <BadgeProgress userId={user?.id} />
 
       {/* User Badges */}
-      <UserBadges userId={userId} />
+      <UserBadges userId={user?.id} />
     </div>
     </>
   );
