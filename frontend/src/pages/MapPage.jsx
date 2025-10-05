@@ -347,7 +347,7 @@ const MapPage = () => {
             className="location-btn"
             onClick={() => updateTestLocation(40.7499, -73.9943)}
           >
-            Times Square
+            Chelsea
           </button>
           <button
             className="location-btn"
