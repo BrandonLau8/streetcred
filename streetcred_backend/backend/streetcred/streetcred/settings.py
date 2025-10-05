@@ -132,7 +132,23 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SUPABASE_URL = os.getenv('NEXT_PUBLIC_SUPABASE_URL', '')
 SUPABASE_KEY = os.getenv('NEXT_PUBLIC_SUPABASE_ANON_KEY', '')
 
+# CORS Configuration
 CORS_ALLOWED_ORIGINS = [
-      "http://localhost:5173",  # or whatever port your React app uses
-      "http://localhost:3000",
-  ]
+    "http://localhost:5173",  # Vite dev server
+    "http://127.0.0.1:5173",  # Alternative localhost
+    "http://localhost:3000",  # React dev server (if needed)
+]
+
+CORS_ALLOW_ALL_ORIGINS = True  # Allow for development
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]

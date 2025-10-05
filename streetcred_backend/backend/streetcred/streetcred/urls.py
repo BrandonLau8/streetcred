@@ -26,4 +26,5 @@ urlpatterns = [
     path('api/badges/', badge_api.urls),  # Badge rewards API
     path('map/', views.map_view, name='map_view'),
     path('map/add-location/', views.add_location, name='add_location'),
+    path('api/identify-neighborhood/', views.identify_neighborhood, name='identify_neighborhood'),
 ]

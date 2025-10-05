@@ -5,6 +5,7 @@ import folium
 from folium import plugins
 from django.http import JsonResponse
 from .auth import get_supabase_client
+from .locater import identify_location
 
 # Create your views here.
 
@@ -173,3 +174,76 @@ def add_location(request):
         })
 
     return JsonResponse({'status': 'error', 'message': 'POST required'}, status=400)
+
+
+def identify_neighborhood(request):
+    """API endpoint to identify NYC neighborhood from coordinates"""
+    if request.method == 'GET':
+        try:
+            lat = float(request.GET.get('lat'))
+            lng = float(request.GET.get('lng'))
+            
+            # Validate coordinates are in NYC area
+            if not (40.4774 <= lat <= 40.9176 and -74.2591 <= lng <= -73.7004):
+                return JsonResponse({
+                    'status': 'error', 
+                    'message': 'Coordinates are outside NYC area'
+                }, status=400)
+            
+            # Use the locater function with error handling
+            try:
+                neighborhood = identify_location(lat, lng)
+                
+                return JsonResponse({
+                    'status': 'success',
+                    'neighborhood': neighborhood,
+                    'coordinates': {'lat': lat, 'lng': lng}
+                })
+            except Exception as ai_error:
+                # If AI fails, use fallback
+                print(f"AI location detection failed: {ai_error}")
+                fallback_neighborhood = get_fallback_neighborhood(lat, lng)
+                
+                return JsonResponse({
+                    'status': 'success',
+                    'neighborhood': fallback_neighborhood,
+                    'coordinates': {'lat': lat, 'lng': lng},
+                    'method': 'fallback'
+                })
+            
+        except (ValueError, TypeError) as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Invalid coordinates provided'
+            }, status=400)
+        except Exception as e:
+            print(f"Unexpected error in identify_neighborhood: {e}")
+            return JsonResponse({
+                'status': 'error',
+                'message': f'Error identifying location: {str(e)}'
+            }, status=500)
+    
+    return JsonResponse({'status': 'error', 'message': 'GET required'}, status=400)
+
+
+def get_fallback_neighborhood(lat, lng):
+    """Fallback neighborhood detection using coordinate ranges"""
+    neighborhoods = [
+        {'name': 'Times Square', 'lat_min': 40.75, 'lat_max': 40.77, 'lng_min': -73.99, 'lng_max': -73.98},
+        {'name': 'Central Park', 'lat_min': 40.76, 'lat_max': 40.80, 'lng_min': -73.98, 'lng_max': -73.95},
+        {'name': 'Battery Park City', 'lat_min': 40.70, 'lat_max': 40.72, 'lng_min': -74.02, 'lng_max': -74.00},
+        {'name': 'Chelsea', 'lat_min': 40.74, 'lat_max': 40.76, 'lng_min': -74.01, 'lng_max': -73.99},
+        {'name': 'Greenwich Village', 'lat_min': 40.73, 'lat_max': 40.74, 'lng_min': -74.01, 'lng_max': -73.99},
+        {'name': 'SoHo', 'lat_min': 40.72, 'lat_max': 40.73, 'lng_min': -74.01, 'lng_max': -73.99},
+        {'name': 'Financial District', 'lat_min': 40.70, 'lat_max': 40.72, 'lng_min': -74.02, 'lng_max': -74.00},
+        {'name': 'Upper East Side', 'lat_min': 40.77, 'lat_max': 40.80, 'lng_min': -73.96, 'lng_max': -73.93},
+        {'name': 'Upper West Side', 'lat_min': 40.78, 'lat_max': 40.80, 'lng_min': -73.98, 'lng_max': -73.95},
+        {'name': 'Harlem', 'lat_min': 40.80, 'lat_max': 40.82, 'lng_min': -73.95, 'lng_max': -73.93}
+    ]
+    
+    for neighborhood in neighborhoods:
+        if (neighborhood['lat_min'] <= lat <= neighborhood['lat_max'] and
+            neighborhood['lng_min'] <= lng <= neighborhood['lng_max']):
+            return neighborhood['name']
+    
+    return 'Manhattan'  # Default fallback
