@@ -26,6 +26,25 @@ function Signup() {
             })
             if (error) throw error
 
+            // If signup was successful and we have a user, create a profile record
+            if (data.user) {
+                const { error: profileError } = await client
+                    .from('profiles')
+                    .insert({
+                        user_id: data.user.id,
+                        name: email, // Set username to email for now
+                        points: 0,
+                        created_at: new Date().toISOString()
+                    })
+
+                if (profileError) {
+                    console.error("Error creating profile:", profileError)
+                    // Don't throw here - user was created successfully, just profile creation failed
+                } else {
+                    console.log("Profile created successfully")
+                }
+            }
+
             console.log("Sign up successful:", data)
             setShowPopup(true)
             setemail("")
