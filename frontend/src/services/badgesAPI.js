@@ -1,5 +1,7 @@
 // Badge API service for Django backend
-const API_BASE_URL = 'http://localhost:8000/api/badges';
+import { API_BASE_URL as BASE_URL } from '../config.js';
+
+const API_BASE_URL = `${BASE_URL}/api/badges`;
 
 /**
  * Add points to a user and award badges at milestones

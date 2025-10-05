@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config.js';
 import './UserBadges.css';
 
 const UserBadges = ({ userId }) => {
@@ -19,7 +20,7 @@ const UserBadges = ({ userId }) => {
       let response;
       try {
         setLoading(true);
-        response = await fetch(`http://localhost:8000/api/badges/user-badges/${userId}`);
+        response = await fetch(`${API_BASE_URL}/api/badges/user-badges/${userId}`);
 
         if (!response.ok) {
           const errorText = await response.text();

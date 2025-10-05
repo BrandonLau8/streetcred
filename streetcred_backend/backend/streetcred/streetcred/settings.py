@@ -29,7 +29,12 @@ SECRET_KEY = 'django-insecure--%89v3ycod-8+!4na+e_n^&f5h_*@m2y21s+jylzv7zt(-(kx&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    'streetcred-i8z3.onrender.com',  # Render backend
+    'streetcred-eta.vercel.app',      # Vercel frontend
+]
 
 
 # Application definition
@@ -137,6 +142,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Vite dev server
     "http://127.0.0.1:5173",  # Alternative localhost
     "http://localhost:3000",  # React dev server (if needed)
+    "https://streetcred-eta.vercel.app",  # Production frontend
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True  # Allow for development
@@ -151,4 +157,10 @@ CORS_ALLOW_HEADERS = [
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
+]
+
+# CSRF Configuration
+CSRF_TRUSTED_ORIGINS = [
+    "https://streetcred-eta.vercel.app",  # Production frontend
+    "https://streetcred-i8z3.onrender.com",  # Production backend
 ]
