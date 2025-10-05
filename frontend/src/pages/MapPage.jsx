@@ -32,6 +32,19 @@ const userLocationIcon = new L.Icon({
   popupAnchor: [0, -12.5],
 });
 
+// Component to automatically center map when location changes
+const MapCenter = ({ center }) => {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (center) {
+      map.setView(center, map.getZoom());
+    }
+  }, [center, map]);
+  
+  return null;
+};
+
 const MapPage = () => {
   const navigate = useNavigate();
   const [selectedInfrastructure, setSelectedInfrastructure] = useState(null);
@@ -143,21 +156,25 @@ const MapPage = () => {
     }
   };
 
+  // Fetch hydrants when user location changes
+  useEffect(() => {
+    if (userLocation) {
+      fetchHydrants(userLocation.lat, userLocation.lng, 0.5);
+    }
+  }, [userLocation]); // This will trigger whenever userLocation changes
+
   // Initialize location on component mount
   useEffect(() => {
     // For testing purposes - set hardcoded location
     const testLocation = {
-      lat: 40.764812,
-      lng: -73.965347,
+      lat: 40.763272,
+      lng: -73.979352,
       accuracy: 5
     };
     setUserLocation(testLocation);
     setLocationError(null);
     setIsTracking(true);
     console.log('Using test location:', testLocation);
-
-    // Fetch hydrants for test location
-    fetchHydrants(testLocation.lat, testLocation.lng, 0.5);
 
     // Uncomment these lines when you want real location tracking:
     // getCurrentLocation();
@@ -169,9 +186,36 @@ const MapPage = () => {
     };
   }, []);
 
+  // Function to update test location (for testing different areas)
+  const updateTestLocation = (lat, lng) => {
+    const newLocation = {
+      lat: lat,
+      lng: lng,
+      accuracy: 5
+    };
+    setUserLocation(newLocation);
+    console.log('Updated test location:', newLocation);
+  };
+
   const handleVerifyInfrastructure = (type) => {
     setSelectedInfrastructure(type);
     navigate(`/verify-infrastructure?type=${type.id}`);
+  };
+
+  // Handle hydrant click - only allow if within 100ft (30.48m)
+  const handleHydrantClick = (hydrant) => {
+    if (!userLocation) return;
+    
+    const distanceMeters = hydrant.distance_meters;
+    const distanceFeet = distanceMeters * 3.28084; // Convert meters to feet
+    
+    if (distanceMeters <= 30.48) { // 100 feet = 30.48 meters
+      // User is close enough, navigate to verify page
+      navigate(`/verify-infrastructure?type=hydrant&hydrantId=${hydrant.id}&lat=${hydrant.lat}&lng=${hydrant.lon}`);
+    } else {
+      // User is too far, show alert
+      alert(`You need to be within 100 feet to verify this hydrant. You are currently ${Math.round(distanceFeet)} feet away.`);
+    }
   };
 
   return (
@@ -201,12 +245,46 @@ const MapPage = () => {
             <span className="hydrants-count">
               {hydrantsLoading ? 'Loading hydrants...' : `${hydrants.length} hydrants nearby`}
             </span>
+            <span className="hydrants-in-range">
+              {hydrantsLoading ? '' : `${hydrants.filter(h => h.distance_meters <= 30.48).length} within 100ft`}
+            </span>
           </div>
         ) : (
           <div className="loading-location">
             Getting your location...
           </div>
         )}
+      </div>
+
+      {/* Test Location Controls */}
+      <div className="test-location-controls">
+        <h4>Test Different Locations:</h4>
+        <div className="location-buttons">
+          <button 
+            className="location-btn"
+            onClick={() => updateTestLocation(40.767779, -73.976940)}
+          >
+            Central Park
+          </button>
+          <button 
+            className="location-btn"
+            onClick={() => updateTestLocation(40.70390676017579, -74.01372957903186)}
+          >
+            Battery Park
+          </button>
+          <button 
+            className="location-btn"
+            onClick={() => updateTestLocation(40.7499, -73.9943)}
+          >
+            Times Square
+          </button>
+          <button 
+            className="location-btn"
+            onClick={() => updateTestLocation(40.806807, -73.964200)}
+          >
+            Columbia University
+          </button>
+        </div>
       </div>
 
       {/* Leaflet Map */}
@@ -218,6 +296,7 @@ const MapPage = () => {
             style={{ height: '500px', width: '100%' }}
             className="leaflet-map"
           >
+            <MapCenter center={[userLocation.lat, userLocation.lng]} />
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -239,22 +318,41 @@ const MapPage = () => {
             </Marker>
 
             {/* Hydrant Markers */}
-            {hydrants.map((hydrant) => (
-              <Marker 
-                key={hydrant.id}
-                position={[hydrant.lat, hydrant.lon]}
-              >
-                <Popup>
-                  <div>
-                    <strong>Fire Hydrant</strong><br/>
-                    ID: {hydrant.id}<br/>
-                    Distance: {hydrant.distance_meters ? `${Math.round(hydrant.distance_meters)}m` : 'Unknown'}<br/>
-                    Lat: {hydrant.lat.toFixed(6)}<br/>
-                    Lng: {hydrant.lon.toFixed(6)}
-                  </div>
-                </Popup>
-              </Marker>
-            ))}
+            {hydrants.map((hydrant) => {
+              const distanceMeters = hydrant.distance_meters;
+              const distanceFeet = distanceMeters * 3.28084;
+              const isWithinRange = distanceMeters <= 30.48; // 100 feet
+              
+              return (
+                <Marker 
+                  key={hydrant.id}
+                  position={[hydrant.lat, hydrant.lon]}
+                  eventHandlers={{
+                    click: () => handleHydrantClick(hydrant)
+                  }}
+                >
+                  <Popup>
+                    <div>
+                      <strong>Fire Hydrant</strong><br/>
+                      ID: {hydrant.id}<br/>
+                      Distance: {Math.round(distanceFeet)} ft ({Math.round(distanceMeters)}m)<br/>
+                      {isWithinRange ? (
+                        <span style={{color: 'green', fontWeight: 'bold'}}>
+                          ✅ Click to verify (within range)
+                        </span>
+                      ) : (
+                        <span style={{color: 'red'}}>
+                          ❌ Too far to verify
+                        </span>
+                      )}
+                      <br/>
+                      Lat: {hydrant.lat.toFixed(6)}<br/>
+                      Lng: {hydrant.lon.toFixed(6)}
+                    </div>
+                  </Popup>
+                </Marker>
+              );
+            })}
           </MapContainer>
         ) : (
           <div className="map-placeholder">
