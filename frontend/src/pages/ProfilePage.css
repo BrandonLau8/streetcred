@@ -54,7 +54,13 @@
 
 .profile-container {
   text-align: center;
+  /* 🔽 Añade estas líneas */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 80vh; /* centra verticalmente el contenido */
 }
+
 
 .user-info {
   margin-bottom: 3rem;

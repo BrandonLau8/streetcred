@@ -21,6 +21,7 @@ function Login() {
 
             // Si todo salió bien, navega a la ruta /home2
             console.log("Navigating to /profile")
+           
             navigate('/profile')
         } catch (error) {
             console.error("Error logging in:", error)

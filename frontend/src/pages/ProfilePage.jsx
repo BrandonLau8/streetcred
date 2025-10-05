@@ -1,38 +1,74 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useEffect, useState } from 'react';
+import { client } from '../Supabase/client.js';
+import Navbar from "../components/navbar.jsx";
 import './ProfilePage.css';
-import Navbar from "../components/navbar.jsx"
 
 const ProfilePage = () => {
   const { user } = useAuth();
   const [username, setUsername] = useState("");
+  const [loading, setLoading] = useState(true); // 👈 nuevo estado
 
   useEffect(() => {
+    if (!user) {
+      console.log("⚠️ No user yet");
+      return;
+    }
+
     const fetchUsername = async () => {
-      if (user?.id) {
-        const { data, error } = await client
-          .from('profiles')
-          .select('username')
-          .eq('id', user.id)
-          .single();
-        if (data && data.username) setUsername(data.username);
+      console.log("🧾 Fetching profile for user:", user.id);
+      const { data, error } = await client
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) {
+        console.error("❌ Error fetching profile:", error);
+      } else {
+        console.log("✅ Profile data:", data);
+        setUsername(data.username);
       }
+      setLoading(false);
     };
+
     fetchUsername();
   }, [user]);
+
+  if (!user) {
+    return (
+      <div className="profile-page">
+        <Navbar />
+        <main className="main-content">
+          <h2>Loading user...</h2>
+        </main>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="profile-page">
+        <Navbar />
+        <main className="main-content">
+          <h2>Loading profile...</h2>
+        </main>
+      </div>
+    );
+  }
 
   const badges = [
     { id: 1, icon: '🚰', name: 'Hydrant Hunter' },
     { id: 2, icon: '🌱', name: 'Eco Warrior' },
     { id: 3, icon: '⭐', name: 'Star Reporter' },
     { id: 4, icon: '🏆', name: 'Champion' },
-    { id: 5, icon: '🔲', name: 'Grid Master' }
+    { id: 5, icon: '🔲', name: 'Grid Master' },
   ];
 
   return (
     <>
-      <Navbar/>
+      <Navbar />
       <div className="profile-page">
         <header className="header"></header>
         <main className="main-content">
@@ -44,10 +80,10 @@ const ProfilePage = () => {
               </div>
 
               <div className="user-name">
-                 {username ? username : user?.email ? user.email : "User"}
+                {username || user?.email || "Anonymous"}
               </div>
-
             </div>
+
             <div className="badges-section">
               <h2 className="section-title">Badges</h2>
               <div className="badges-grid">
@@ -58,6 +94,7 @@ const ProfilePage = () => {
                 ))}
               </div>
             </div>
+
             <div className="action-buttons">
               <Link to="/leaderboard" className="cta-button secondary">
                 View leaderboard

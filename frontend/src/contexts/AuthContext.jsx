@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { client } from '../Supabase/client'; // 👈 asegúrate de tener esta importación
 
 const AuthContext = createContext();
 
@@ -16,30 +17,61 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in on app load
-    const savedAuth = localStorage.getItem('streetcred_auth');
-    if (savedAuth) {
-      try {
-        const authData = JSON.parse(savedAuth);
+    const initAuth = async () => {
+      // 🔹 Intentar obtener usuario actual de Supabase
+      const { data, error } = await client.auth.getUser();
+      if (data?.user) {
+        console.log('✅ User loaded from Supabase:', data.user);
+        setUser(data.user);
         setIsAuthenticated(true);
-        setUser(authData.user);
-      } catch (error) {
-        console.error('Error parsing saved auth:', error);
+        localStorage.setItem('streetcred_auth', JSON.stringify({ user: data.user }));
+      } else {
+        console.log('❌ No Supabase user session found:', error);
+        // Intentar cargar del localStorage como fallback
+        const savedAuth = localStorage.getItem('streetcred_auth');
+        if (savedAuth) {
+          try {
+            const authData = JSON.parse(savedAuth);
+            setUser(authData.user);
+            setIsAuthenticated(true);
+          } catch (e) {
+            console.error('Error parsing saved auth:', e);
+            localStorage.removeItem('streetcred_auth');
+          }
+        }
+      }
+
+      setLoading(false);
+    };
+
+    initAuth();
+
+    // 🔹 Escuchar cambios en la sesión (login, logout)
+    const { data: listener } = client.auth.onAuthStateChange((event, session) => {
+      console.log('🔄 Auth state changed:', event, session);
+      setUser(session?.user ?? null);
+      setIsAuthenticated(!!session?.user);
+
+      if (session?.user) {
+        localStorage.setItem('streetcred_auth', JSON.stringify({ user: session.user }));
+      } else {
         localStorage.removeItem('streetcred_auth');
       }
-    }
-    setLoading(false);
+    });
+
+    return () => listener.subscription.unsubscribe();
   }, []);
 
   const login = (userData) => {
-    setIsAuthenticated(true);
     setUser(userData);
+    setIsAuthenticated(true);
     localStorage.setItem('streetcred_auth', JSON.stringify({ user: userData }));
   };
 
-  const logout = () => {
-    setIsAuthenticated(false);
+  const logout = async () => {
+    await client.auth.signOut();
     setUser(null);
+    setIsAuthenticated(false);
     localStorage.removeItem('streetcred_auth');
   };
 
@@ -48,12 +80,13 @@ export const AuthProvider = ({ children }) => {
     user,
     login,
     logout,
-    loading
+    loading,
   };
 
   return (
     <AuthContext.Provider value={value}>
-      {children}
+      {loading ? <div>Loading session...</div> : children}
     </AuthContext.Provider>
   );
 };
+
