@@ -5,6 +5,8 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './MapPage.css';
 import Navbar from "../components/navbar.jsx"
+import UserBadges from "../components/UserBadges.jsx"
+import BadgeProgress from "../components/BadgeProgress.jsx"
 import { getClosestHydrants } from '../services/hydrantsAPI';
 
 // Fix for default markers in react-leaflet
@@ -55,6 +57,10 @@ const MapPage = () => {
   const [hydrantsLoading, setHydrantsLoading] = useState(false);
   const [hydrantsError, setHydrantsError] = useState(null);
   const watchIdRef = useRef(null);
+
+  // TODO: Replace with actual user ID from your authentication system
+  // For example: const { userId } = useAuth();
+  const [userId, setUserId] = useState("a1f30266-3ffc-49d3-8ea5-fb3f78a79361");
 
   const infrastructureTypes = [
     { id: 'hydrant', name: 'Fire Hydrant', icon: '🚰', color: '#ff0000' },
@@ -379,6 +385,12 @@ const MapPage = () => {
           ))}
         </div>
       </div>
+
+      {/* Badge Progress */}
+      <BadgeProgress userId={userId} />
+
+      {/* User Badges */}
+      <UserBadges userId={userId} />
     </div>
     </>
   );

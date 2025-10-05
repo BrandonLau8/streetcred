@@ -43,6 +43,12 @@
   font-weight: 600;
 }
 
+.hydrants-in-range {
+  font-size: 0.875rem;
+  color: #059669;
+  font-weight: 600;
+}
+
 .loading-location {
   text-align: center;
   color: #64748b;

@@ -3,6 +3,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { client } from '../Supabase/client.js';
 import Navbar from "../components/navbar.jsx";
+import UserBadges from "../components/UserBadges.jsx";
+import BadgeProgress from "../components/BadgeProgress.jsx";
 import './ProfilePage.css';
 
 const ProfilePage = () => {
@@ -58,14 +60,6 @@ const ProfilePage = () => {
     );
   }
 
-  const badges = [
-    { id: 1, icon: '🚰', name: 'Hydrant Hunter' },
-    { id: 2, icon: '🌱', name: 'Eco Warrior' },
-    { id: 3, icon: '⭐', name: 'Star Reporter' },
-    { id: 4, icon: '🏆', name: 'Champion' },
-    { id: 5, icon: '🔲', name: 'Grid Master' },
-  ];
-
   return (
     <>
       <Navbar />
@@ -84,22 +78,19 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            <div className="badges-section">
-              <h2 className="section-title">Badges</h2>
-              <div className="badges-grid">
-                {badges.map((badge) => (
-                  <div key={badge.id} className="badge">
-                    <span className="badge-icon">{badge.icon}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
             <div className="action-buttons">
               <Link to="/leaderboard" className="cta-button secondary">
                 View leaderboard
               </Link>
             </div>
+
+            {/* Badge Progress */}
+            <BadgeProgress userId={user?.id} />
+
+            {/* User Badges */}
+            <UserBadges userId={user?.id} />
+
+          
           </div>
         </main>
       </div>

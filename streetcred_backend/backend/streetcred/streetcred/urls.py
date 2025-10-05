@@ -19,13 +19,11 @@ from django.urls import path
 from myapp import views
 from myapp.api import api
 from myapp.badge_api import api as badge_api
-from myapp.reports_api import api as reports_api
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', api.urls),  # Django Ninja API endpoints
     path('api/badges/', badge_api.urls),  # Badge rewards API
-    path('api/reports/', reports_api.urls),  # Reports submission API
     path('map/', views.map_view, name='map_view'),
     path('map/add-location/', views.add_location, name='add_location'),
 ]
