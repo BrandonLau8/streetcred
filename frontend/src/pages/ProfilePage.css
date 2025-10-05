@@ -1,6 +1,7 @@
 .profile-page {
   min-height: 100vh;
-  background: url('../../images/ProfileBackground.png') no-repeat center center;
+  background: url('../images/ProfileBackground.png'); 
+  background-repeat: no-repeat; 
   background-size: cover;
   font-family: system-ui, -apple-system, sans-serif;
   padding-top: 80px;
