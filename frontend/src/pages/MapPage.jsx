@@ -9,11 +9,8 @@ const MapPage = () => {
 
   const infrastructureTypes = [
     { id: 'hydrant', name: 'Fire Hydrant', icon: '🚰', color: '#ff0000' },
-    { id: 'traffic-light', name: 'Traffic Light', icon: '🚦', color: '#ffa500' },
-    { id: 'stop-sign', name: 'Stop Sign', icon: '🛑', color: '#ff0000' },
     { id: 'pothole', name: 'Pothole', icon: '🕳️', color: '#8b4513' },
-    { id: 'streetlight', name: 'Street Light', icon: '💡', color: '#ffff00' },
-    { id: 'crosswalk', name: 'Crosswalk', icon: '🚶', color: '#ffffff' }
+    { id: 'streetlight', name: 'Street Light', icon: '💡', color: '#ffff00' }
   ];
 
   const handleVerifyInfrastructure = (type) => {

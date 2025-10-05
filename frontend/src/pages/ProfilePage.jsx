@@ -25,13 +25,6 @@ const ProfilePage = () => {
     <Navbar/>
     <div className="profile-page">
       <header className="header">
-        <Link to="/map" className="back-button">
-          <span className="back-arrow"> Map </span>
-        </Link>
-        <div className="logo">
-          <span className="logo-icon">📍</span>
-          <span className="logo-text">StreetCred</span>
-        </div>
       </header>
 
       <main className="main-content">
@@ -53,21 +46,6 @@ const ProfilePage = () => {
                   <span className="badge-icon">{badge.icon}</span>
                 </div>
               ))}
-            </div>
-          </div>
-
-          <div className="stats-section">
-            <div className="stat">
-              <span className="stat-icon">👍</span>
-              <span className="stat-text">{user.streak}-day streak</span>
-            </div>
-            <div className="stat">
-              <span className="stat-icon">📋</span>
-              <span className="stat-text">Total reports submitted</span>
-            </div>
-            <div className="stat">
-              <span className="stat-icon">🗺️</span>
-              <span className="stat-text">Coverage area</span>
             </div>
           </div>
 
