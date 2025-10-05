@@ -64,11 +64,11 @@ locations = [
 animals = ["rat", "pigeon", "squirrel", "skunk", "raccoon", "dog", "cat"]
 
 remaining_locations = [
-    # "Battery Park City",
-    # "Civic Center",
-    # "East Village",
-    # "Flatiron District",
-    # "Little Italy",
+    "Battery Park City",
+    "Civic Center",
+    "East Village",
+    "Flatiron District",
+    "Little Italy",
     "Lower East Side",
     "Meatpacking District",
     "NoHo",
@@ -101,8 +101,17 @@ remaining_locations = [
     "Yorkville"
 ]
 
+special_locations = [
+    "The School Columbia University",
+    "The Bank Capital One",
+    "An Ai World",
+    "The Company BlackRock",
+    "The Company Comet Opik",
+    "The Company Echo Merit Systems"
+]
+
 # Generate images for each location and animal combination
-for location_name in remaining_locations:
+for location_name in special_locations:
     for animal in animals:
         print(f"\nGenerating {animal} badge for {location_name}...")
 

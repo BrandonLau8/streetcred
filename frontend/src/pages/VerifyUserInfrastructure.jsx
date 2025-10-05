@@ -1,148 +1,178 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import Navbar from '../components/navbar.jsx';
 import { useAuth } from '../contexts/AuthContext';
+import { client } from '../Supabase/client';
+import { identifyNeighborhood } from '../services/locationService';
 import { addPoints } from '../services/badgesAPI';
 import './VerifyInfrastructurePage.css';
 
 const VerifyUserInfrastructure = () => {
   const [searchParams] = useSearchParams();
-  const infrastructureType = searchParams.get('type') || 'hydrant';
+  const hydrantId = searchParams.get('hydrantId');
+  const lat = searchParams.get('lat');
+  const lng = searchParams.get('lng');
   const navigate = useNavigate();
-  const location = useLocation();
   const { user } = useAuth();
 
+  // Infrastructure type state (toggleable)
+  const [infrastructureType, setInfrastructureType] = useState(searchParams.get('type') || 'hydrant');
+
+  // Form state
+  const [generalCondition, setGeneralCondition] = useState(null);
   const [isFunctional, setIsFunctional] = useState(null);
-  const [condition, setCondition] = useState(5);
-  const [photo, setPhoto] = useState(null);
   const [description, setDescription] = useState('');
-  const [userLocation, setUserLocation] = useState(null);
-  const [locationError, setLocationError] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [photo, setPhoto] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+  const [neighborhood, setNeighborhood] = useState(null);
+  const [isDetectingNeighborhood, setIsDetectingNeighborhood] = useState(false);
 
   const infrastructureTypes = {
-    hydrant: { name: 'Fire Hydrant', icon: '=�', color: '#ff0000', questions: ['Is this hydrant functional?', 'Is the hydrant\'s paint in good condition?'] },
-    'traffic-light': { name: 'Traffic Light', icon: '=�', color: '#ffa500', questions: ['Is this traffic light working?', 'Are all lights functioning properly?'] },
-    'stop-sign': { name: 'Stop Sign', icon: '=�', color: '#ff0000', questions: ['Is this stop sign visible?', 'Is the sign in good condition?'] },
-    pothole: { name: 'Pothole', icon: '=s', color: '#8b4513', questions: ['Is this pothole dangerous?', 'How severe is the damage?'] },
-    streetlight: { name: 'Street Light', icon: '=�', color: '#ffff00', questions: ['Is this street light working?', 'Is the light bright enough?'] },
-    crosswalk: { name: 'Crosswalk', icon: '=�', color: '#ffffff', questions: ['Is this crosswalk visible?', 'Are the markings clear?'] }
+    hydrant: { name: 'Fire Hydrant', icon: '🚰', color: '#ff0000' },
+    pothole: { name: 'Pothole', icon: '🕳️', color: '#8b4513' },
+    streetlight: { name: 'Street Light', icon: '💡', color: '#ffff00' }
   };
 
   const currentType = infrastructureTypes[infrastructureType] || infrastructureTypes.hydrant;
 
-  // Get user location on mount
+  const conditionOptions = [
+    { value: 'great', label: 'Great', color: '#22c55e', icon: '✅' },
+    { value: 'okay', label: 'Okay', color: '#f59e0b', icon: '⚠️' },
+    { value: 'bad', label: 'Bad', color: '#ef4444', icon: '❌' }
+  ];
+
+  // Auto-detect neighborhood when component loads
   useEffect(() => {
-    // Try to get location from navigation state first
-    if (location.state?.userLocation) {
-      setUserLocation(location.state.userLocation);
-      console.log('Using location from navigation state:', location.state.userLocation);
-    } else {
-      // Otherwise, request location from browser
-      getCurrentLocation();
-    }
-  }, [location.state]);
-
-  const getCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      setLocationError('Geolocation is not supported by this browser.');
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const loc = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-          accuracy: position.coords.accuracy
-        };
-        setUserLocation(loc);
-        setLocationError(null);
-        console.log('Got current location:', loc);
-      },
-      (error) => {
-        console.error('Error getting location:', error);
-        let errorMessage = '';
-        switch(error.code) {
-          case error.PERMISSION_DENIED:
-            errorMessage = 'Location permission denied. Please enable location access.';
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMessage = 'Location information unavailable.';
-            break;
-          case error.TIMEOUT:
-            errorMessage = 'Location request timed out.';
-            break;
-          default:
-            errorMessage = `Location error: ${error.message}`;
+    const detectNeighborhood = async () => {
+      if (lat && lng) {
+        console.log(`🔍 Detecting neighborhood for coordinates: [${lat}, ${lng}]`);
+        setIsDetectingNeighborhood(true);
+        try {
+          const result = await identifyNeighborhood(parseFloat(lat), parseFloat(lng));
+          if (result.success) {
+            setNeighborhood(result.neighborhood);
+            console.log(`✅ Detected neighborhood: ${result.neighborhood} for coordinates [${lat}, ${lng}]`);
+          } else {
+            console.error('❌ Failed to detect neighborhood:', result.error);
+          }
+        } catch (error) {
+          console.error('❌ Error detecting neighborhood:', error);
+        } finally {
+          setIsDetectingNeighborhood(false);
         }
-        setLocationError(errorMessage);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0
+      } else {
+        console.log('⚠️ No coordinates provided for neighborhood detection');
       }
-    );
-  };
+    };
+
+    detectNeighborhood();
+  }, [lat, lng]);
 
   const handleSubmit = async () => {
-    if (!userLocation) {
-      alert('Please wait for your location to be determined before submitting.');
+    if (!user) {
+      setSubmitError('You must be logged in to submit a report');
       return;
     }
 
-    setSubmitting(true);
+    setIsSubmitting(true);
+    setSubmitError(null);
 
     try {
-      // Convert photo to base64 if exists
-      let imageBase64 = null;
-      if (photo) {
-        imageBase64 = await fileToBase64(photo);
-      }
-
+      // Prepare the report data
       const reportData = {
+        user_id: user.id,
+        lat: parseFloat(lat),
+        lon: parseFloat(lng),
+        description: description || null,
+        image_url: null, // Will be updated if photo is uploaded
+        itemid: hydrantId || null,
         type: infrastructureType,
-        isFunctional,
-        condition,
-        description,
-        lat: userLocation.lat,
-        lng: userLocation.lng,
-        accuracy: userLocation.accuracy,
-        photo: imageBase64
+        condition: generalCondition,
+        functional: isFunctional ? 'Yes' : 'No',
+        neighborhood: neighborhood // Auto-detected neighborhood
       };
 
-      console.log('Infrastructure verification with location:', reportData);
+      // Upload photo if provided
+      if (photo) {
+        const fileExt = photo.name.split('.').pop();
+        const fileName = `${user.id}_${Date.now()}.${fileExt}`;
+        const filePath = `reports/${fileName}`;
+
+        // Upload to Supabase Storage
+        const { error: uploadError } = await client.storage
+          .from('reports')
+          .upload(filePath, photo);
+
+        if (uploadError) {
+          console.error('Photo upload error:', uploadError);
+          // Continue without photo if upload fails
+        } else {
+          // Get public URL
+          const { data: { publicUrl } } = client.storage
+            .from('reports')
+            .getPublicUrl(filePath);
+          reportData.image_url = publicUrl;
+        }
+      }
+
+      // Insert report into database
+      const { data, error } = await client
+        .from('reports')
+        .insert([reportData])
+        .select();
+
+      if (error) {
+        console.error('Database error:', error);
+        setSubmitError('Failed to submit report. Please try again.');
+        return;
+      }
+
+      console.log('Report submitted successfully:', data);
 
       // Add points to user account
-      const pointsToAdd = 25; // Standard points for infrastructure report
-      const result = await addPoints(
-        user?.id,
+      const pointsToAdd = 1; // Standard points for infrastructure report
+      const pointsResult = await addPoints(
+        user.id,
         pointsToAdd,
-        userLocation.lat,
-        userLocation.lng
+        parseFloat(lat),
+        parseFloat(lng)
       );
 
-      if (result.success) {
-        console.log('Points added successfully:', result.data);
-        console.log(`Earned ${result.data.points_added} points!`);
-        console.log(`Total points: ${result.data.new_points}`);
+      if (pointsResult.success) {
+        console.log('Points added successfully:', pointsResult.data);
+        console.log(`Earned ${pointsResult.data.points_added} points!`);
+        console.log(`Total points: ${pointsResult.data.new_points}`);
 
-        if (result.data.new_badges && result.data.new_badges.length > 0) {
-          console.log('New badges earned:', result.data.new_badges);
+        // Check if new badges were earned
+        if (pointsResult.data.new_badges && pointsResult.data.new_badges.length > 0) {
+          console.log('New badges earned:', pointsResult.data.new_badges);
+
+          // Navigate to badge earned page with badge data
+          const mostRecentBadge = pointsResult.data.new_badges[pointsResult.data.new_badges.length - 1];
+          navigate('/badge-earned', {
+            state: {
+              badge: mostRecentBadge.badge,
+              milestone: mostRecentBadge.milestone,
+              points: pointsResult.data.points_added,
+              totalPoints: pointsResult.data.new_points
+            }
+          });
+        } else {
+          // Navigate to regular success page (no badges earned)
+          navigate(`/report-submitted2?type=${infrastructureType}&reportId=${data[0].id}&points=${pointsResult.data.points_added}`);
         }
-
-        // Navigate to success page with points data
-        navigate(`/report-submitted?type=${infrastructureType}&points=${result.data.points_added}&newBadges=${result.data.new_badges.length}`);
       } else {
-        console.error('Failed to add points:', result.error);
+        console.error('Failed to add points:', pointsResult.error);
         // Still navigate to success page even if points API fails
-        navigate(`/report-submitted?type=${infrastructureType}`);
+        navigate(`/report-submitted2?type=${infrastructureType}&reportId=${data[0].id}`);
       }
+
     } catch (error) {
-      console.error('Error submitting report:', error);
-      alert('Failed to submit report. Please try again.');
+      console.error('Submit error:', error);
+      setSubmitError('An unexpected error occurred. Please try again.');
     } finally {
-      setSubmitting(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -151,129 +181,205 @@ const VerifyUserInfrastructure = () => {
     if (file) setPhoto(file);
   };
 
-  // Helper: Convert File to base64
-  const fileToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        // Remove "data:image/jpeg;base64," prefix
-        const base64 = reader.result.split(',')[1];
-        resolve(base64);
-      };
-      reader.onerror = reject;
-    });
-  };
+  const isFormValid = generalCondition !== null && isFunctional !== null;
 
   return (
-    <div className="verify-infrastructure-page">
-      <div className="infrastructure-image">
-        <div className="infrastructure-display" style={{ backgroundColor: currentType.color }}>
-          <span className="infrastructure-icon">{currentType.icon}</span>
-        </div>
-        <h2 className="infrastructure-title">{currentType.name}</h2>
-      </div>
+    <>
+      <Navbar />
+      <div className="verify-infrastructure-page">
+        {/* Header Section */}
+        <div className="verify-header">
+          <div className="infrastructure-display" style={{ backgroundColor: currentType.color }}>
+            <span className="infrastructure-icon">{currentType.icon}</span>
+          </div>
+          <div className="header-info">
+            <h1 className="infrastructure-title">{currentType.name}</h1>
+            {hydrantId && (
+              <p className="infrastructure-id">ID: {hydrantId}</p>
+            )}
+            {lat && lng && (
+              <p className="infrastructure-location">
+                📍 {parseFloat(lat).toFixed(6)}, {parseFloat(lng).toFixed(6)}
+              </p>
+            )}
+            {isDetectingNeighborhood ? (
+              <p className="neighborhood-status">
+                🔍 Detecting neighborhood...
+              </p>
+            ) : neighborhood ? (
+              <p className="neighborhood-status">
+                🏘️ {neighborhood}
+              </p>
+            ) : null}
 
-      {/* Location Status */}
-      {locationError && (
-        <div className="location-error" style={{ padding: '10px', backgroundColor: '#fee', color: '#c00', marginBottom: '10px', borderRadius: '5px' }}>
-          {locationError}
-          <button onClick={getCurrentLocation} style={{ marginLeft: '10px' }}>Retry</button>
-        </div>
-      )}
-      {userLocation && (
-        <div className="location-info" style={{ padding: '10px', backgroundColor: '#efe', color: '#060', marginBottom: '10px', borderRadius: '5px', fontSize: '12px' }}>
-          =� Location: {userLocation.lat.toFixed(6)}, {userLocation.lng.toFixed(6)} (�{Math.round(userLocation.accuracy)}m)
-        </div>
-      )}
 
-      <div className="form-container">
-        {/* Question 1 */}
-        <div className="question-group">
-          <h3 className="question">{currentType.questions[0]}</h3>
-          <div className="answer-buttons">
-            <button
-              className={`answer-button ${isFunctional === true ? 'selected' : ''}`}
-              onClick={() => setIsFunctional(true)}
-            >
-              Yes
-            </button>
-            <button
-              className={`answer-button ${isFunctional === false ? 'selected' : ''}`}
-              onClick={() => setIsFunctional(false)}
-            >
-              No
-            </button>
           </div>
         </div>
 
-        {/* Question 2 */}
-        <div className="question-group">
-          <h3 className="question">{currentType.questions[1]}</h3>
-          <div className="rating-container">
-            <div className="rating-bar">
-              <div
-                className="rating-fill"
-                style={{ width: `${(condition / 10) * 100}%` }}
-              ></div>
+        {/* Infrastructure Type Selector */}
+        <div className="verify-form" style={{ paddingBottom: 0 }}>
+          <div className="form-step">
+            <h2 className="step-title">Select Infrastructure Type</h2>
+            <p className="step-description">What type of infrastructure are you reporting?</p>
+            <div className="condition-options">
+              {Object.entries(infrastructureTypes).map(([key, type]) => (
+                <button
+                  key={key}
+                  className={`condition-button ${infrastructureType === key ? 'selected' : ''}`}
+                  onClick={() => setInfrastructureType(key)}
+                  style={{
+                    borderColor: infrastructureType === key ? type.color : '#e5e7eb',
+                    backgroundColor: infrastructureType === key ? `${type.color}15` : 'white'
+                  }}
+                >
+                  <span className="condition-icon">{type.icon}</span>
+                  <span className="condition-label">{type.name}</span>
+                </button>
+              ))}
             </div>
-            <div className="rating-labels">
-              <span>Poor</span>
-              <span>Excellent</span>
+          </div>
+        </div>
+
+        {/* Form Section */}
+        <div className="verify-form">
+          {/* Step 1: General Condition */}
+          <div className="form-step">
+            <h2 className="step-title">Step 1: General Condition</h2>
+            <p className="step-description">How would you rate the overall condition?</p>
+            <div className="condition-options">
+              {conditionOptions.map((option) => (
+                <button
+                  key={option.value}
+                  className={`condition-button ${generalCondition === option.value ? 'selected' : ''}`}
+                  onClick={() => setGeneralCondition(option.value)}
+                  style={{
+                    borderColor: generalCondition === option.value ? option.color : '#e5e7eb',
+                    backgroundColor: generalCondition === option.value ? `${option.color}15` : 'white'
+                  }}
+                >
+                  <span className="condition-icon">{option.icon}</span>
+                  <span className="condition-label">{option.label}</span>
+                </button>
+              ))}
             </div>
-            <input
-              type="range"
-              min="1"
-              max="10"
-              value={condition}
-              onChange={(e) => setCondition(parseInt(e.target.value))}
-              className="rating-slider"
+          </div>
+
+          {/* Step 2: Functionality */}
+          <div className="form-step">
+            <h2 className="step-title">Step 2: Functionality</h2>
+            <p className="step-description">Does it look functional?</p>
+            <div className="functionality-options">
+              <button
+                className={`functionality-button ${isFunctional === true ? 'selected yes' : ''}`}
+                onClick={() => setIsFunctional(true)}
+              >
+                <span className="functionality-icon">✅</span>
+                <span className="functionality-label">Yes</span>
+              </button>
+              <button
+                className={`functionality-button ${isFunctional === false ? 'selected no' : ''}`}
+                onClick={() => setIsFunctional(false)}
+              >
+                <span className="functionality-icon">❌</span>
+                <span className="functionality-label">No</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Step 3: Location Details */}
+          <div className="form-step">
+            <h2 className="step-title">Step 3: Location Details</h2>
+            <p className="step-description">Location information for this report</p>
+            <div className="location-details">
+              <div className="location-item">
+                <span className="location-label">📍 Coordinates:</span>
+                <span className="location-value">
+                  {lat && lng ? `${parseFloat(lat).toFixed(6)}, ${parseFloat(lng).toFixed(6)}` : 'Not available'}
+                </span>
+              </div>
+              <div className="location-item">
+                <span className="location-label">🏘️ Neighborhood:</span>
+                <span className="location-value">
+                  {isDetectingNeighborhood ? (
+                    <span className="detecting">🔍 Detecting...</span>
+                  ) : neighborhood ? (
+                    <span className="detected">{neighborhood}</span>
+                  ) : (
+                    <span className="not-detected">Not detected</span>
+                  )}
+                </span>
+              </div>
+              {hydrantId && (
+                <div className="location-item">
+                  <span className="location-label">🚰 Hydrant ID:</span>
+                  <span className="location-value">{hydrantId}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Step 4: Description */}
+          <div className="form-step">
+            <h2 className="step-title">Step 4: Description</h2>
+            <p className="step-description">Tell us more about what you observed</p>
+            <textarea
+              className="description-input"
+              placeholder="Describe the condition, any issues you noticed, or additional details..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={4}
             />
           </div>
-        </div>
 
-        {/* Description field */}
-        <div className="description-section">
-          <h3 className="question">Add a description (optional)</h3>
-          <textarea
-            className="description-input"
-            placeholder="Describe what you observed..."
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={4}
-          />
-        </div>
-
-        {/* Photo upload */}
-        <div className="photo-upload">
-          <label htmlFor="photo-upload" className="photo-button">
-            <span className="camera-icon">=�</span>
-            Photo
-          </label>
-          <input
-            id="photo-upload"
-            type="file"
-            accept="image/*"
-            onChange={handlePhotoUpload}
-            className="photo-input"
-          />
-          {photo && (
-            <div className="photo-preview">
-              <span className="photo-name">{photo.name}</span>
+          {/* Step 5: Photo (Optional) */}
+          <div className="form-step">
+            <h2 className="step-title">Step 5: Photo (Optional)</h2>
+            <p className="step-description">Add a photo to support your report</p>
+            <div className="photo-upload">
+              <label htmlFor="photo-upload" className="photo-button">
+                <span className="camera-icon">📷</span>
+                <span className="photo-text">
+                  {photo ? 'Change Photo' : 'Add Photo'}
+                </span>
+              </label>
+              <input
+                id="photo-upload"
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                className="photo-input"
+              />
+              {photo && (
+                <div className="photo-preview">
+                  <span className="photo-name">📎 {photo.name}</span>
+                </div>
+              )}
             </div>
-          )}
-        </div>
+          </div>
 
-        {/* Submit button */}
-        <button
-          onClick={handleSubmit}
-          className="cta-button primary"
-          disabled={isFunctional === null || !userLocation}
-        >
-          {userLocation ? 'Report' : 'Waiting for location...'}
-        </button>
+          {/* Submit Button */}
+          <div className="submit-section">
+            <button
+              onClick={handleSubmit}
+              className={`submit-button ${isFormValid && !isSubmitting ? 'enabled' : 'disabled'}`}
+              disabled={!isFormValid || isSubmitting}
+            >
+              {isSubmitting ? 'Submitting...' : 'Submit Report'}
+            </button>
+            {!isFormValid && !isSubmitting && (
+              <p className="validation-message">
+                Please complete all required steps to submit your report
+              </p>
+            )}
+            {submitError && (
+              <p className="error-message">
+                {submitError}
+              </p>
+            )}
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

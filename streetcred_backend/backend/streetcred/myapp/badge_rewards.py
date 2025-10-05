@@ -75,13 +75,25 @@ def award_badges_for_points(user_id: str, new_points: int, latitude: float, long
     # Get location name from coordinates
     location_name = identify_location(latitude, longitude)
 
+    # Special location names (Columbia University sponsors)
+    special_locations = ["Columbia University", "Capital One", "An Ai World", "BlackRock", "Comet Opik", "Echo Merit Systems"]
+
     # Award a random badge for each missing milestone
     for milestone in missing_milestones:
         # Get badges for this location
-        location_badges = supabase.table("badges")\
-            .select("*")\
-            .eq("location_name", location_name)\
-            .execute()
+        if location_name == "Columbia University":
+            # For Columbia University, select from special sponsor locations
+            location_badges = supabase.table("badges")\
+                .select("*")\
+                .in_("location_name", special_locations)\
+                .execute()
+        else:
+            # For other locations, exclude special locations
+            location_badges = supabase.table("badges")\
+                .select("*")\
+                .eq("location_name", location_name)\
+                .not_().in_("location_name", special_locations)\
+                .execute()
 
         if location_badges.data:
             # Randomly select a badge (random animal) from this location

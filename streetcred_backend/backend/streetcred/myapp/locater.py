@@ -23,8 +23,8 @@ NYC_NEIGHBORHOODS = [
     "Hudson Yards", "Kips Bay", "Murray Hill", "Midtown", "NoMad",
     "Stuyvesant Town", "Times Square", "Turtle Bay", "Central Park",
     "East Harlem", "Fort George", "Hamilton Heights", "Harlem",
-    "Hudson Heights", "Inwood", "Manhattan Valley", "Morningside Heights",
-    "Upper East Side", "Upper West Side", "Washington Heights", "Yorkville"
+    "Hudson Heights", "Inwood", "Manhattan Valley",
+    "Upper East Side", "Upper West Side", "Washington Heights", "Yorkville", "Columbia University"
 ]
 
 def identify_location(latitude: float, longitude: float) -> str:
@@ -78,7 +78,8 @@ Morningside Heights: [40.8115, -73.9628]
 Upper East Side: [40.7742, -73.9562]
 Upper West Side: [40.7878, -73.9758]
 Washington Heights: [40.8508, -73.9345]
-Yorkville: [40.7770, -73.9545]"""
+Yorkville: [40.7770, -73.9545]
+Columbia University: [40.8075, -73.9626]"""
 
     prompt = f"""You are a NYC geography expert. Here are the neighborhoods with their approximate center coordinates:
 

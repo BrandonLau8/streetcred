@@ -59,7 +59,7 @@ if __name__ == "__main__":
     import glob
 
     # Get all PNG files in gen_images folder
-    image_files = glob.glob("gen_images/*.png")
+    image_files = glob.glob("special_gen_images/*.png")
 
     print(f"Found {len(image_files)} images to upload\n")
 

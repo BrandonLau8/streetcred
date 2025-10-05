@@ -6,6 +6,7 @@ import Login from './pages/LoginPage';
 import ProfilePage from './pages/ProfilePage';
 import MapPage from './pages/MapPage';
 import VerifyInfrastructurePage from './pages/VerifyInfrastructurePage';
+import VerifyUserInfrastructure from './pages/VerifyUserInfrastructure';
 
 import ReportSubmittedPage from './pages/ReportSubmittedPage';
 import ReportSubmittedPage2 from './pages/ReportSubmittedPage2';
@@ -34,6 +35,7 @@ function App() {
             <Route path="/map" element={<MapPage />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/verify-infrastructure" element={<VerifyInfrastructurePage />} />
+            <Route path="/verify-user-infrastructure" element={<VerifyUserInfrastructure />} />
 
             <Route path="/report-submitted" element={<ReportSubmittedPage />} />
             <Route path="/report-submitted2" element={<ReportSubmittedPage2 />} />

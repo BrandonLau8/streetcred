@@ -59,6 +59,8 @@ const MapPage = () => {
   const [hydrantsLoading, setHydrantsLoading] = useState(false);
   const [hydrantsError, setHydrantsError] = useState(null);
   const watchIdRef = useRef(null);
+  const [manualLat, setManualLat] = useState('');
+  const [manualLng, setManualLng] = useState('');
 
   const infrastructureTypes = [
     { id: 'hydrant', name: 'Fire Hydrant', icon: '🚰', color: '#ff0000' },
@@ -230,6 +232,29 @@ const MapPage = () => {
     console.log('Updated test location:', newLocation);
   };
 
+  // Function to set manual location from input fields
+  const setManualLocation = () => {
+    const lat = parseFloat(manualLat);
+    const lng = parseFloat(manualLng);
+
+    if (isNaN(lat) || isNaN(lng)) {
+      alert('Please enter valid latitude and longitude values');
+      return;
+    }
+
+    if (lat < -90 || lat > 90) {
+      alert('Latitude must be between -90 and 90');
+      return;
+    }
+
+    if (lng < -180 || lng > 180) {
+      alert('Longitude must be between -180 and 180');
+      return;
+    }
+
+    updateTestLocation(lat, lng);
+  };
+
   const handleVerifyInfrastructure = (type) => {
     if (!userLocation) {
       setLocationError('Please wait for your location to be determined before verifying infrastructure.');
@@ -311,30 +336,58 @@ const MapPage = () => {
       <div className="test-location-controls">
         <h4>Test Different Locations:</h4>
         <div className="location-buttons">
-          <button 
+          <button
             className="location-btn"
             onClick={() => updateTestLocation(40.767779, -73.976940)}
           >
             Central Park
           </button>
-          <button 
+          <button
             className="location-btn"
             onClick={() => updateTestLocation(40.70390676017579, -74.01372957903186)}
           >
             Battery Park
           </button>
-          <button 
+          <button
             className="location-btn"
             onClick={() => updateTestLocation(40.7499, -73.9943)}
           >
             Times Square
           </button>
-          <button 
+          <button
             className="location-btn"
             onClick={() => updateTestLocation(40.806807, -73.964200)}
           >
             Columbia University
           </button>
+        </div>
+
+        <div className="manual-location-input">
+          <h4>Or Enter Coordinates Manually:</h4>
+          <div className="coordinate-inputs">
+            <input
+              type="number"
+              step="any"
+              placeholder="Latitude (e.g., 40.7580)"
+              value={manualLat}
+              onChange={(e) => setManualLat(e.target.value)}
+              className="coordinate-input"
+            />
+            <input
+              type="number"
+              step="any"
+              placeholder="Longitude (e.g., -73.9855)"
+              value={manualLng}
+              onChange={(e) => setManualLng(e.target.value)}
+              className="coordinate-input"
+            />
+            <button
+              className="location-btn set-location-btn"
+              onClick={setManualLocation}
+            >
+              Set Location
+            </button>
+          </div>
         </div>
       </div>
 
