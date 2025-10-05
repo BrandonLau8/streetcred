@@ -6,7 +6,9 @@ html, body {
 
 .about-page {
   min-height: 100vh; /* full viewport height */
-  background-color: #f9fafb;
+  background-image: url('../images/StreetCredLanding.png');
+  background-size: cover;
+  background-position: center;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -29,9 +31,13 @@ html, body {
   margin-bottom: 1rem;
   color: #1f2937;
 }
-
+  
 .about-text {
   font-size: 1.1rem;
   color: #4b5563;
   line-height: 1.6;
+}
+
+.about-button{
+  color: #559b24;
 }

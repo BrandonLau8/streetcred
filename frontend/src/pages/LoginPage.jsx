@@ -20,6 +20,7 @@ function Login() {
             console.log("Login successful:", data)
 
             // Si todo salió bien, navega a la ruta /home2
+            console.log("Navigating to /profile")
             navigate('/profile')
         } catch (error) {
             console.error("Error logging in:", error)
@@ -29,7 +30,7 @@ function Login() {
     return (
         <>
         
-                <div className="login-page">   {/* background container */}
+        <div className="login-page">   {/* background container */}
         <div className="main-site">  {/* the actual card */}
             <h2>Welcome Back!</h2>
             <form className="auth-form" onSubmit={handleSubmit}>

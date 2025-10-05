@@ -24,9 +24,7 @@ function App() {
             <Route 
               path="/profile" 
               element={
-                <ProtectedRoute>
-                  <ProfilePage />
-                </ProtectedRoute>
+                  <ProfilePage/>
               } 
             />
             <Route path="/map" element={<MapPage />} />
