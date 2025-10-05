@@ -6,7 +6,7 @@ import Login from './pages/LoginPage';
 import ProfilePage from './pages/ProfilePage';
 import MapPage from './pages/MapPage';
 import VerifyInfrastructurePage from './pages/VerifyInfrastructurePage';
-import VerifyUserInfrastructure from './pages/VerifyUserInfrastructure';
+
 import ReportSubmittedPage from './pages/ReportSubmittedPage';
 import './App.css';
 import Signup from './pages/SignUp';
@@ -32,7 +32,7 @@ function App() {
             <Route path="/map" element={<MapPage />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/verify-infrastructure" element={<VerifyInfrastructurePage />} />
-            <Route path="/verify-user-infrastructure" element={<VerifyUserInfrastructure />} />
+
             <Route path="/report-submitted" element={<ReportSubmittedPage />} />
           </Routes>
         </div>

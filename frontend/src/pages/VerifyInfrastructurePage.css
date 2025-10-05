@@ -50,10 +50,17 @@
 }
 
 .infrastructure-location {
-  margin: 0;
+  margin: 0 0 0.25rem 0;
   font-size: 0.875rem;
   color: #64748b;
   font-family: 'Courier New', monospace;
+}
+
+.neighborhood-status {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #059669;
+  font-weight: 500;
 }
 
 /* Form Section */
@@ -174,6 +181,56 @@
 
 .functionality-label {
   font-weight: 600;
+}
+
+/* Location Details */
+.location-details {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.location-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.location-item:last-child {
+  border-bottom: none;
+}
+
+.location-label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.location-value {
+  font-size: 0.875rem;
+  color: #6b7280;
+  font-family: 'Courier New', monospace;
+  text-align: right;
+  max-width: 60%;
+  word-break: break-all;
+}
+
+.location-value .detecting {
+  color: #f59e0b;
+  font-weight: 500;
+}
+
+.location-value .detected {
+  color: #059669;
+  font-weight: 600;
+}
+
+.location-value .not-detected {
+  color: #ef4444;
+  font-weight: 500;
 }
 
 /* Description Input */
@@ -355,6 +412,17 @@
 
   .functionality-icon {
     font-size: 1rem;
+  }
+
+  .location-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .location-value {
+    text-align: left;
+    max-width: 100%;
   }
 
   .submit-button {

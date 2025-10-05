@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Navbar from '../components/navbar.jsx';
 import { useAuth } from '../contexts/AuthContext';
 import { client } from '../Supabase/client';
+import { identifyNeighborhood } from '../services/locationService';
 import './VerifyInfrastructurePage.css';
 
 const VerifyInfrastructurePage = () => {
@@ -21,6 +22,8 @@ const VerifyInfrastructurePage = () => {
   const [photo, setPhoto] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
+  const [neighborhood, setNeighborhood] = useState(null);
+  const [isDetectingNeighborhood, setIsDetectingNeighborhood] = useState(false);
 
   const infrastructureTypes = {
     hydrant: { name: 'Fire Hydrant', icon: '🚰', color: '#ff0000' },
@@ -35,6 +38,33 @@ const VerifyInfrastructurePage = () => {
     { value: 'okay', label: 'Okay', color: '#f59e0b', icon: '⚠️' },
     { value: 'bad', label: 'Bad', color: '#ef4444', icon: '❌' }
   ];
+
+  // Auto-detect neighborhood when component loads
+  useEffect(() => {
+    const detectNeighborhood = async () => {
+      if (lat && lng) {
+        console.log(`🔍 Detecting neighborhood for coordinates: [${lat}, ${lng}]`);
+        setIsDetectingNeighborhood(true);
+        try {
+          const result = await identifyNeighborhood(parseFloat(lat), parseFloat(lng));
+          if (result.success) {
+            setNeighborhood(result.neighborhood);
+            console.log(`✅ Detected neighborhood: ${result.neighborhood} for coordinates [${lat}, ${lng}]`);
+          } else {
+            console.error('❌ Failed to detect neighborhood:', result.error);
+          }
+        } catch (error) {
+          console.error('❌ Error detecting neighborhood:', error);
+        } finally {
+          setIsDetectingNeighborhood(false);
+        }
+      } else {
+        console.log('⚠️ No coordinates provided for neighborhood detection');
+      }
+    };
+
+    detectNeighborhood();
+  }, [lat, lng]);
 
   const handleSubmit = async () => {
     if (!user) {
@@ -57,7 +87,7 @@ const VerifyInfrastructurePage = () => {
         type: infrastructureType,
         condition: generalCondition,
         functional: isFunctional ? 'Yes' : 'No',
-        neighborhood: null // Leaving blank as requested
+        neighborhood: neighborhood // Auto-detected neighborhood
       };
 
       // Upload photo if provided
@@ -132,6 +162,17 @@ const VerifyInfrastructurePage = () => {
                 📍 {parseFloat(lat).toFixed(6)}, {parseFloat(lng).toFixed(6)}
               </p>
             )}
+            {isDetectingNeighborhood ? (
+              <p className="neighborhood-status">
+                🔍 Detecting neighborhood...
+              </p>
+            ) : neighborhood ? (
+              <p className="neighborhood-status">
+                🏘️ {neighborhood}
+              </p>
+            ) : null}
+            
+            
           </div>
         </div>
 
@@ -181,9 +222,41 @@ const VerifyInfrastructurePage = () => {
             </div>
           </div>
 
-          {/* Step 3: Description */}
+          {/* Step 3: Location Details */}
           <div className="form-step">
-            <h2 className="step-title">Step 3: Description</h2>
+            <h2 className="step-title">Step 3: Location Details</h2>
+            <p className="step-description">Location information for this report</p>
+            <div className="location-details">
+              <div className="location-item">
+                <span className="location-label">📍 Coordinates:</span>
+                <span className="location-value">
+                  {lat && lng ? `${parseFloat(lat).toFixed(6)}, ${parseFloat(lng).toFixed(6)}` : 'Not available'}
+                </span>
+              </div>
+              <div className="location-item">
+                <span className="location-label">🏘️ Neighborhood:</span>
+                <span className="location-value">
+                  {isDetectingNeighborhood ? (
+                    <span className="detecting">🔍 Detecting...</span>
+                  ) : neighborhood ? (
+                    <span className="detected">{neighborhood}</span>
+                  ) : (
+                    <span className="not-detected">Not detected</span>
+                  )}
+                </span>
+              </div>
+              {hydrantId && (
+                <div className="location-item">
+                  <span className="location-label">🚰 Hydrant ID:</span>
+                  <span className="location-value">{hydrantId}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Step 4: Description */}
+          <div className="form-step">
+            <h2 className="step-title">Step 4: Description</h2>
             <p className="step-description">Tell us more about what you observed</p>
             <textarea
               className="description-input"
@@ -194,9 +267,9 @@ const VerifyInfrastructurePage = () => {
             />
           </div>
 
-          {/* Step 4: Photo (Optional) */}
+          {/* Step 5: Photo (Optional) */}
           <div className="form-step">
-            <h2 className="step-title">Step 4: Photo (Optional)</h2>
+            <h2 className="step-title">Step 5: Photo (Optional)</h2>
             <p className="step-description">Add a photo to support your report</p>
             <div className="photo-upload">
               <label htmlFor="photo-upload" className="photo-button">
