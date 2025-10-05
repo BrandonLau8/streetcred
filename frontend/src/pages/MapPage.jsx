@@ -200,20 +200,9 @@ const MapPage = () => {
 
   // Initialize location on component mount
   useEffect(() => {
-    // For testing purposes - set hardcoded location
-    const testLocation = {
-      lat: 40.763272,
-      lng: -73.979352,
-      accuracy: 5
-    };
-    setUserLocation(testLocation);
-    setLocationError(null);
-    setIsTracking(true);
-    console.log('Using test location:', testLocation);
-
-    // Uncomment these lines when you want real location tracking:
-    // getCurrentLocation();
-    // startLocationTracking();
+    // Try to get real user location first
+    getCurrentLocation();
+    startLocationTracking();
 
     // Cleanup on unmount
     return () => {
@@ -223,13 +212,17 @@ const MapPage = () => {
 
   // Function to update test location (for testing different areas)
   const updateTestLocation = (lat, lng) => {
+    // Stop real location tracking when using demo location
+    stopLocationTracking();
+    
     const newLocation = {
       lat: lat,
       lng: lng,
       accuracy: 5
     };
     setUserLocation(newLocation);
-    console.log('Updated test location:', newLocation);
+    setLocationError(null);
+    console.log('Updated demo location:', newLocation);
   };
 
   // Function to set manual location from input fields
@@ -252,6 +245,8 @@ const MapPage = () => {
       return;
     }
 
+    // Stop real location tracking when using manual location
+    stopLocationTracking();
     updateTestLocation(lat, lng);
   };
 
@@ -306,7 +301,7 @@ const MapPage = () => {
         ) : userLocation ? (
           <div className="location-info">
             <span className="tracking-indicator">
-              {isTracking ? '🟢' : '🔴'} Location Tracking: {isTracking ? 'Active' : 'Inactive'}
+              {isTracking ? '🟢' : '🔴'} Location: {isTracking ? 'Real GPS' : 'Demo Mode'}
             </span>
             <span className="coordinates">
               {userLocation.lat.toFixed(6)}, {userLocation.lng.toFixed(6)}
@@ -332,9 +327,9 @@ const MapPage = () => {
         )}
       </div>
 
-      {/* Test Location Controls */}
+      {/* Demo Location Controls */}
       <div className="test-location-controls">
-        <h4>Test Different Locations:</h4>
+        <h4>Demo Mode - Test Different Locations:</h4>
         <div className="location-buttons">
           <button
             className="location-btn"
@@ -359,6 +354,15 @@ const MapPage = () => {
             onClick={() => updateTestLocation(40.806807, -73.964200)}
           >
             Columbia University
+          </button>
+          <button
+            className="location-btn real-location-btn"
+            onClick={() => {
+              getCurrentLocation();
+              startLocationTracking();
+            }}
+          >
+            📍 Use My Real Location
           </button>
         </div>
 
