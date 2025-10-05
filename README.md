@@ -22,16 +22,15 @@ Reports are displayed with images in the UI
 Run Frontend Tests:
 npm test
 Test App in Browser:
-npm run dev
-# Opens frontend at http://localhost:5173
+npm run dev> Opens frontend at http://localhost:5173
 
 ## 📚 Dependencies
---Key frontend packages:
---React 18 - Frontend framework
---React Router DOM - Client-side routing
---Supabase JS - Authentication & storage client
---Tailwind CSS - Styling
---Vite - Development server & build tool
+-Key frontend packages:
+-React 18 - Frontend framework
+-React Router DOM - Client-side routing
+-Supabase JS - Authentication & storage client
+-Tailwind CSS - Styling
+-Vite - Development server & build tool
 
 ## 📞 Support
 For issues or questions:
