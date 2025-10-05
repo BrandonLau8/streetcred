@@ -1,0 +1,68 @@
+.leaderboard-page {
+  min-height: 100vh;
+  background-color: #f9fafb;
+  font-family: system-ui, -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.leaderboard-header {
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.leaderboard-header h1 {
+  font-size: 2rem;
+  color: #333;
+}
+
+.leaderboard-main {
+  width: 100%;
+  max-width: 600px;
+  padding: 0 1rem;
+}
+
+.leaderboard-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.leaderboard-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  font-weight: 500;
+}
+
+.rank {
+  font-weight: 700;
+  color: #22c55e;
+}
+
+.username {
+  flex: 1;
+  margin-left: 1rem;
+}
+
+.points {
+  font-weight: 600;
+  color: #16a34a;
+}
+
+@media (max-width: 480px) {
+  .leaderboard-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .points {
+    align-self: flex-end;
+  }
+}

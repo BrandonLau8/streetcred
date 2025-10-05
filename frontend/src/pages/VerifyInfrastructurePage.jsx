@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import './VerifyInfrastructurePage.css';
 
@@ -10,6 +10,7 @@ const VerifyInfrastructurePage = () => {
   const [isFunctional, setIsFunctional] = useState(null);
   const [condition, setCondition] = useState(5);
   const [photo, setPhoto] = useState(null);
+  const [description, setDescription] = useState(''); // 🆕 descripción
 
   const infrastructureTypes = {
     hydrant: { name: 'Fire Hydrant', icon: '🚰', color: '#ff0000', questions: ['Is this hydrant functional?', 'Is the hydrant\'s paint in good condition?'] },
@@ -23,11 +24,11 @@ const VerifyInfrastructurePage = () => {
   const currentType = infrastructureTypes[infrastructureType] || infrastructureTypes.hydrant;
 
   const handleSubmit = () => {
-    // Handle form submission
     console.log('Infrastructure verification:', {
       type: infrastructureType,
       isFunctional,
       condition,
+      description, // 🆕 incluimos descripción en el log
       photo
     });
     navigate(`/report-submitted?type=${infrastructureType}`);
@@ -35,9 +36,7 @@ const VerifyInfrastructurePage = () => {
 
   const handlePhotoUpload = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setPhoto(file);
-    }
+    if (file) setPhoto(file);
   };
 
   return (
@@ -50,6 +49,7 @@ const VerifyInfrastructurePage = () => {
       </div>
 
       <div className="form-container">
+        {/* Pregunta 1 */}
         <div className="question-group">
           <h3 className="question">{currentType.questions[0]}</h3>
           <div className="answer-buttons">
@@ -68,6 +68,7 @@ const VerifyInfrastructurePage = () => {
           </div>
         </div>
 
+        {/* Pregunta 2 */}
         <div className="question-group">
           <h3 className="question">{currentType.questions[1]}</h3>
           <div className="rating-container">
@@ -92,6 +93,19 @@ const VerifyInfrastructurePage = () => {
           </div>
         </div>
 
+        {/* 🆕 Campo de descripción */}
+        <div className="description-section">
+          <h3 className="question">Add a description (optional)</h3>
+          <textarea
+            className="description-input"
+            placeholder="Describe what you observed..."
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={4}
+          />
+        </div>
+
+        {/* Subida de foto */}
         <div className="photo-upload">
           <label htmlFor="photo-upload" className="photo-button">
             <span className="camera-icon">📷</span>
@@ -111,6 +125,7 @@ const VerifyInfrastructurePage = () => {
           )}
         </div>
 
+        {/* Botón Report */}
         <button 
           onClick={handleSubmit}
           className="cta-button primary"

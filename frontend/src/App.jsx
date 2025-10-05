@@ -10,6 +10,7 @@ import ReportSubmittedPage from './pages/ReportSubmittedPage';
 import './App.css';
 import Signup from './pages/SignUp';
 import About from './pages/About';
+import Leaderboard from './pages/Leaderboard';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
               } 
             />
             <Route path="/map" element={<MapPage />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/verify-infrastructure" element={<VerifyInfrastructurePage />} />
             <Route path="/report-submitted" element={<ReportSubmittedPage />} />
           </Routes>

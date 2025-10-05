@@ -207,6 +207,26 @@
   background-color: #9ca3af;
   cursor: not-allowed;
 }
+.description-section {
+  margin: 2rem 0;
+}
+
+.description-input {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  resize: none;
+  font-family: inherit;
+}
+
+.description-input:focus {
+  outline: none;
+  border-color: #22c55e;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
+}
+
 
 @media (max-width: 768px) {
   .hydrant-image {

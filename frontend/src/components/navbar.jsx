@@ -22,6 +22,14 @@ export default function Navbar() {
               Map
             </NavLink>
           </li>
+            <li>
+            <NavLink
+              to="/leaderboard"
+              className={({ isActive }) => isActive ? 'active-link' : ''}
+            >
+              Leaderboard
+            </NavLink>
+          </li>
         </ul>
       </nav>
     </header>
