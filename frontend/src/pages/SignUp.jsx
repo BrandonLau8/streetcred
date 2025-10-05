@@ -32,7 +32,7 @@ function Signup() {
                     .from('profiles')
                     .insert({
                         user_id: data.user.id,
-                        name: email, // Set username to email for now
+                        username: email, // Set username to email for now
                         points: 0,
                         created_at: new Date().toISOString()
                     })
