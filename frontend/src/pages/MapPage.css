@@ -37,6 +37,12 @@
   color: #64748b;
 }
 
+.hydrants-count {
+  font-size: 0.875rem;
+  color: #1e40af;
+  font-weight: 600;
+}
+
 .loading-location {
   text-align: center;
   color: #64748b;

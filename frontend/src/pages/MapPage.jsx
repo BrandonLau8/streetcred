@@ -5,6 +5,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './MapPage.css';
 import Navbar from "../components/navbar.jsx"
+import { getClosestHydrants } from '../services/hydrantsAPI';
 
 // Fix for default markers in react-leaflet
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -37,6 +38,9 @@ const MapPage = () => {
   const [userLocation, setUserLocation] = useState(null);
   const [locationError, setLocationError] = useState(null);
   const [isTracking, setIsTracking] = useState(false);
+  const [hydrants, setHydrants] = useState([]);
+  const [hydrantsLoading, setHydrantsLoading] = useState(false);
+  const [hydrantsError, setHydrantsError] = useState(null);
   const watchIdRef = useRef(null);
 
   const infrastructureTypes = [
@@ -115,10 +119,49 @@ const MapPage = () => {
     }
   };
 
+  // Fetch hydrants when user location changes
+  const fetchHydrants = async (lat, lng, radius = 0.5) => {
+    setHydrantsLoading(true);
+    setHydrantsError(null);
+    
+    try {
+      const result = await getClosestHydrants(lat, lng, radius);
+      
+      if (result.success) {
+        setHydrants(result.data);
+        console.log(`Found ${result.count} hydrants within ${radius} miles`);
+      } else {
+        setHydrantsError(result.error);
+        setHydrants([]);
+      }
+    } catch (error) {
+      console.error('Error fetching hydrants:', error);
+      setHydrantsError('Failed to fetch hydrants');
+      setHydrants([]);
+    } finally {
+      setHydrantsLoading(false);
+    }
+  };
+
   // Initialize location on component mount
   useEffect(() => {
-    getCurrentLocation();
-    startLocationTracking();
+    // For testing purposes - set hardcoded location
+    const testLocation = {
+      lat: 40.764812,
+      lng: -73.965347,
+      accuracy: 5
+    };
+    setUserLocation(testLocation);
+    setLocationError(null);
+    setIsTracking(true);
+    console.log('Using test location:', testLocation);
+
+    // Fetch hydrants for test location
+    fetchHydrants(testLocation.lat, testLocation.lng, 0.5);
+
+    // Uncomment these lines when you want real location tracking:
+    // getCurrentLocation();
+    // startLocationTracking();
 
     // Cleanup on unmount
     return () => {
@@ -154,6 +197,9 @@ const MapPage = () => {
             </span>
             <span className="accuracy">
               Accuracy: ±{Math.round(userLocation.accuracy)}m
+            </span>
+            <span className="hydrants-count">
+              {hydrantsLoading ? 'Loading hydrants...' : `${hydrants.length} hydrants nearby`}
             </span>
           </div>
         ) : (
@@ -191,6 +237,24 @@ const MapPage = () => {
                 </div>
               </Popup>
             </Marker>
+
+            {/* Hydrant Markers */}
+            {hydrants.map((hydrant) => (
+              <Marker 
+                key={hydrant.id}
+                position={[hydrant.lat, hydrant.lon]}
+              >
+                <Popup>
+                  <div>
+                    <strong>Fire Hydrant</strong><br/>
+                    ID: {hydrant.id}<br/>
+                    Distance: {hydrant.distance_meters ? `${Math.round(hydrant.distance_meters)}m` : 'Unknown'}<br/>
+                    Lat: {hydrant.lat.toFixed(6)}<br/>
+                    Lng: {hydrant.lon.toFixed(6)}
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
           </MapContainer>
         ) : (
           <div className="map-placeholder">
