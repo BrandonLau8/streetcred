@@ -19,6 +19,20 @@ const LandingPage = () => {
             Earning StreetCred →
           </Link>
 
+{/*           <div style={{ marginTop: '15px' }}> */}
+{/*             <Link to="/login" style={{ */}
+{/*               padding: '10px 20px', */}
+{/*               backgroundColor: '#fff', */}
+{/*               color: '#333', */}
+{/*               textDecoration: 'none', */}
+{/*               borderRadius: '5px', */}
+{/*               border: '2px solid #ddd', */}
+{/*               display: 'inline-block' */}
+{/*             }}> */}
+{/*               Login / Sign Up */}
+{/*             </Link> */}
+{/*           </div> */}
+
           <div className="info-link">
             <Link to="/about">See how it works</Link>
             <span className="arrow">→</span>
