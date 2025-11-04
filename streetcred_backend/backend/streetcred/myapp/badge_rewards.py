@@ -88,11 +88,10 @@ def award_badges_for_points(user_id: str, new_points: int, latitude: float, long
                 .in_("location_name", special_locations)\
                 .execute()
         else:
-            # For other locations, exclude special locations
+            # For other locations, just get badges for this location
             location_badges = supabase.table("badges")\
                 .select("*")\
                 .eq("location_name", location_name)\
-                .not_().in_("location_name", special_locations)\
                 .execute()
 
         if location_badges.data:

@@ -76,6 +76,30 @@ The application uses geohashes for efficient location-based queries:
 - All Location models auto-generate geohash on save via the model's `save()` method
 - Geohash field is indexed for fast prefix-based spatial queries
 
+#### Why Geohashing?
+Geohashing solves the "find nearby locations" problem efficiently by converting 2D proximity queries into fast string prefix lookups:
+
+**Without Geohashing** (slow):
+```python
+# Calculates distance for EVERY location in database
+for location in all_locations:
+    if distance(user_lat, user_lng, location.lat, location.lng) < 300m:
+        results.append(location)
+```
+
+**With Geohashing** (fast):
+```python
+# Uses indexed prefix search - one query instead of thousands of calculations
+area_hash = pgh.encode(lat, lng, precision=7)  # "dr5regw"
+nearby = Location.objects.filter(geohash__startswith=area_hash)
+```
+
+**Key Benefits**:
+- **Spatial locality**: Nearby locations share geohash prefixes
+- **Database indexing**: Standard B-tree index on string prefix (no PostGIS required)
+- **SQLite compatible**: Works without spatial extensions
+- **Scalable**: Precision 7 (~300m grid) enables single query for area searches
+
 Example query pattern (from api.py):
 ```python
 # Get nearby facilities using geohash prefix
@@ -94,11 +118,12 @@ facilities = db.query("SELECT * FROM facilities WHERE geohash LIKE $1", f"{area_
   - `badges`: Stores badge metadata (id, animal, location_name, image_url)
   - RLS policies configured for public read/write access
 
-### API Architecture Note
-There's a discrepancy between the defined API endpoints:
-- `myapp/api.py` defines Django Ninja endpoints (@app.get, @app.post) but these are not yet wired into `streetcred/urls.py`
-- Current routing in `urls.py` uses traditional Django function-based views from `myapp/views.py`
-- When integrating Django Ninja, add `path('api/', api.urls)` to `streetcred/urls.py`
+### API Architecture
+The project uses Django Ninja for API endpoints:
+- `myapp/api.py` defines main API endpoints (locations, Supabase queries) mounted at `/api/`
+- `myapp/badge_api.py` defines badge rewards API mounted at `/api/badges/`
+- Traditional Django function-based views in `myapp/views.py` handle map rendering and some API routes
+- All APIs are properly wired in `streetcred/urls.py`
 
 ### Environment Configuration
 The project uses python-dotenv to load configuration from `.env` file. Required variables:
@@ -163,8 +188,8 @@ python myapp/google_imggen.py
 python myapp/upload_image.py
 ```
 
-### Migrating to Django Ninja APIs
-When transitioning from function-based views to Django Ninja:
-1. The API definitions in `myapp/api.py` need the NinjaAPI instance properly initialized (currently references undefined `app` variable)
-2. Import and mount the API in `streetcred/urls.py`
-3. Update frontend to call `/api/` prefixed endpoints
+### API Documentation
+Django Ninja automatically generates interactive API documentation:
+- Swagger UI available at `/api/docs` for main API
+- OpenAPI schema at `/api/openapi.json`
+- Badge API docs at `/api/badges/docs`

@@ -142,22 +142,24 @@ const VerifyInfrastructurePage = () => {
         console.log(`Earned ${pointsResult.data.points_added} points!`);
         console.log(`Total points: ${pointsResult.data.new_points}`);
 
-        // Check if new badges were earned
-        if (pointsResult.data.new_badges && pointsResult.data.new_badges.length > 0) {
-          console.log('New badges earned:', pointsResult.data.new_badges);
+        // Check if user reached a milestone (5, 10, 15, 20, etc.)
+        const totalPoints = pointsResult.data.new_points;
+        const isMilestone = totalPoints % 5 === 0 && totalPoints >= 5;
 
-          // Navigate to badge earned page with badge data
-          const mostRecentBadge = pointsResult.data.new_badges[pointsResult.data.new_badges.length - 1];
+        if (isMilestone) {
+          console.log('Milestone reached! Navigating to badge earned page');
+
+          // Navigate to badge earned page
           navigate('/badge-earned', {
             state: {
-              badge: mostRecentBadge.badge,
-              milestone: mostRecentBadge.milestone,
+              badge: pointsResult.data.new_badges?.[0]?.badge || null,
+              milestone: totalPoints,
               points: pointsResult.data.points_added,
-              totalPoints: pointsResult.data.new_points
+              totalPoints: totalPoints
             }
           });
         } else {
-          // Navigate to regular success page (no badges earned)
+          // Navigate to regular success page (no milestone)
           navigate(`/report-submitted2?type=${infrastructureType}&reportId=${data[0].id}&points=${pointsResult.data.points_added}`);
         }
       } else {
