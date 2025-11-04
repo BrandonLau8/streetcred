@@ -30,8 +30,9 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    'streetcred-i8z3.onrender.com',  # Render backend
-    'streetcred-eta.vercel.app',      # Vercel frontend
+    'streetcred-backend.onrender.com',  # Render backend (new URL)
+    'streetcred-i8z3.onrender.com',     # Render backend (old URL, keep for safety)
+    'streetcred-eta.vercel.app',        # Vercel frontend
 ]
 
 
