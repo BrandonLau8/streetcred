@@ -68,13 +68,16 @@ const MapPage = () => {
     { id: 'streetlight', name: 'Street Light', icon: '💡', color: '#ffff00' }
   ];
 
-  // Get user's current location
+  // Get user's current location and start tracking (with high accuracy)
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
       setLocationError('Geolocation is not supported by this browser.');
       return;
     }
 
+    console.log('Getting accurate location...');
+
+    // Use HIGH accuracy for precise GPS location
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const location = {
@@ -84,30 +87,71 @@ const MapPage = () => {
         };
         setUserLocation(location);
         setLocationError(null);
-        console.log('Current location:', location);
+        console.log('Accurate location acquired:', location, `(±${Math.round(location.accuracy)}m)`);
+
+        // Start continuous tracking after getting initial location
+        startLocationTracking();
       },
       (error) => {
-        console.error('Error getting location:', error);
-        let errorMessage = '';
-        switch(error.code) {
-          case error.PERMISSION_DENIED:
-            errorMessage = 'Location permission denied. Please enable location access in your browser settings.';
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMessage = 'Location information unavailable. Please try again.';
-            break;
-          case error.TIMEOUT:
-            errorMessage = 'Location request timed out. Please try again.';
-            break;
-          default:
-            errorMessage = `Location error: ${error.message}`;
+        console.error('High accuracy location failed:', error);
+
+        // If high accuracy fails (timeout), try lower accuracy as fallback
+        if (error.code === error.TIMEOUT) {
+          console.log('Trying lower accuracy...');
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const location = {
+                lat: position.coords.latitude,
+                lng: position.coords.longitude,
+                accuracy: position.coords.accuracy
+              };
+              setUserLocation(location);
+              setLocationError(null);
+              console.log('Location acquired (lower accuracy):', location, `(±${Math.round(location.accuracy)}m)`);
+              startLocationTracking();
+            },
+            (fallbackError) => {
+              let errorMessage = '';
+              switch(fallbackError.code) {
+                case fallbackError.PERMISSION_DENIED:
+                  errorMessage = 'Location permission denied. Please enable location access in your browser settings.';
+                  break;
+                case fallbackError.POSITION_UNAVAILABLE:
+                  errorMessage = 'Location information unavailable. Please try again or use test locations.';
+                  break;
+                case fallbackError.TIMEOUT:
+                  errorMessage = 'Location request timed out. Try moving near a window or use test locations.';
+                  break;
+                default:
+                  errorMessage = `Location error: ${fallbackError.message}`;
+              }
+              setLocationError(errorMessage);
+            },
+            {
+              enableHighAccuracy: false,
+              timeout: 10000,
+              maximumAge: 60000
+            }
+          );
+        } else {
+          let errorMessage = '';
+          switch(error.code) {
+            case error.PERMISSION_DENIED:
+              errorMessage = 'Location permission denied. Please enable location access in your browser settings.';
+              break;
+            case error.POSITION_UNAVAILABLE:
+              errorMessage = 'Location information unavailable. Please try again or use test locations.';
+              break;
+            default:
+              errorMessage = `Location error: ${error.message}`;
+          }
+          setLocationError(errorMessage);
         }
-        setLocationError(errorMessage);
       },
       {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0 // Don't use cached position for initial request
+        enableHighAccuracy: true,  // Use GPS for accurate location
+        timeout: 15000,  // 15 seconds for GPS lock
+        maximumAge: 0  // Don't use cached position
       }
     );
   };
@@ -116,6 +160,12 @@ const MapPage = () => {
   const startLocationTracking = () => {
     if (!navigator.geolocation) {
       setLocationError('Geolocation is not supported by this browser.');
+      return;
+    }
+
+    // Don't start tracking if already tracking
+    if (watchIdRef.current) {
+      console.log('Already tracking location');
       return;
     }
 
@@ -142,7 +192,7 @@ const MapPage = () => {
             errorMessage = 'Location tracking unavailable.';
             break;
           case error.TIMEOUT:
-            errorMessage = 'Location tracking timed out.';
+            errorMessage = 'Location tracking timed out. Using lower accuracy.';
             break;
           default:
             errorMessage = `Location tracking error: ${error.message}`;
@@ -151,9 +201,9 @@ const MapPage = () => {
         setIsTracking(false);
       },
       {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 10000 // 10 seconds for real-time updates
+        enableHighAccuracy: true,  // Use GPS for accurate tracking
+        timeout: 15000,  // 15 seconds
+        maximumAge: 5000  // Accept positions up to 5 seconds old
       }
     );
   };
@@ -200,7 +250,10 @@ const MapPage = () => {
 
   // Initialize location on component mount
   useEffect(() => {
-    // For testing purposes - set hardcoded location
+    // Don't auto-request location on mount to avoid timeout issues
+    // User can click "My Location" button when ready
+
+    // For testing purposes - use hardcoded location by default:
     const testLocation = {
       lat: 40.763272,
       lng: -73.979352,
@@ -208,12 +261,8 @@ const MapPage = () => {
     };
     setUserLocation(testLocation);
     setLocationError(null);
-    setIsTracking(true);
-    console.log('Using test location:', testLocation);
-
-    // Uncomment these lines when you want real location tracking:
-    // getCurrentLocation();
-    // startLocationTracking();
+    setIsTracking(true);  // Show as active since we have a location
+    console.log('Using test location (click "My Location" for real GPS):', testLocation);
 
     // Cleanup on unmount
     return () => {
@@ -229,6 +278,7 @@ const MapPage = () => {
       accuracy: 5
     };
     setUserLocation(newLocation);
+    setIsTracking(true);  // Keep tracking active when using test locations
     console.log('Updated test location:', newLocation);
   };
 
@@ -332,33 +382,90 @@ const MapPage = () => {
         )}
       </div>
 
-      {/* Test Location Controls */}
+      {/* Location Controls */}
       <div className="test-location-controls">
-        <h4>Test Different Locations:</h4>
+        <h4>Select Your Location:</h4>
         <div className="location-buttons">
           <button
             className="location-btn"
             onClick={() => updateTestLocation(40.767779, -73.976940)}
+            style={{
+              backgroundColor: '#3498db',
+              color: 'white',
+              fontWeight: 'bold'
+            }}
           >
-            Central Park
+            📍 Central Park
           </button>
           <button
             className="location-btn"
             onClick={() => updateTestLocation(40.70390676017579, -74.01372957903186)}
+            style={{
+              backgroundColor: '#3498db',
+              color: 'white',
+              fontWeight: 'bold'
+            }}
           >
-            Battery Park
+            📍 Battery Park
           </button>
           <button
             className="location-btn"
             onClick={() => updateTestLocation(40.7499, -73.9943)}
+            style={{
+              backgroundColor: '#3498db',
+              color: 'white',
+              fontWeight: 'bold'
+            }}
           >
-            Chelsea
+            📍 Chelsea
           </button>
           <button
             className="location-btn"
             onClick={() => updateTestLocation(40.806807, -73.964200)}
+            style={{
+              backgroundColor: '#3498db',
+              color: 'white',
+              fontWeight: 'bold'
+            }}
           >
-            Columbia University
+            📍 Columbia University
+          </button>
+          <button
+            className="location-btn"
+            onClick={() => updateTestLocation(40.7282, -73.9942)}
+            style={{
+              backgroundColor: '#3498db',
+              color: 'white',
+              fontWeight: 'bold'
+            }}
+          >
+            📍 Greenwich Village
+          </button>
+          <button
+            className="location-btn"
+            onClick={() => updateTestLocation(40.7580, -73.9855)}
+            style={{
+              backgroundColor: '#3498db',
+              color: 'white',
+              fontWeight: 'bold'
+            }}
+          >
+            📍 Times Square
+          </button>
+        </div>
+
+        <div style={{ marginTop: '15px', fontSize: '14px', color: '#666' }}>
+          Or try GPS (works best on mobile outdoors):
+          <button
+            className="location-btn"
+            onClick={getCurrentLocation}
+            style={{
+              marginLeft: '10px',
+              fontSize: '14px',
+              padding: '8px 16px'
+            }}
+          >
+            📡 Use My GPS
           </button>
         </div>
 
