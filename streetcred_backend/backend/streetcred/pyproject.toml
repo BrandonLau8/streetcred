@@ -22,4 +22,7 @@ dependencies = [
     "python-dotenv>=1.1.1",
     "python-geohash>=0.8.5",
     "supabase>=2.21.1",
+    "dj-database-url>=2.1.0",      # Add this
+    "psycopg2-binary>=2.9.9",      # Add this
+    "whitenoise>=6.6.0",
 ]
