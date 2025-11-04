@@ -3,6 +3,8 @@ backend.md
 frontend.md
 port-management.md
 streetcred_refinements.md
+render-deploy-fix.md
+
 
 .env
 .env.local
