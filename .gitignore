@@ -1,4 +1,9 @@
 # Environment variables
+backend.md
+frontend.md
+port-management.md
+streetcred_refinements.md
+
 .env
 .env.local
 .env.*.local
@@ -49,3 +54,4 @@ db.sqlite3-journal
 # OS
 .DS_Store
 Thumbs.db
+

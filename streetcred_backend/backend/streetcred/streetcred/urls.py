@@ -21,6 +21,7 @@ from myapp.api import api
 from myapp.badge_api import api as badge_api
 
 urlpatterns = [
+    path('', views.home, name='home'),  # Homepage with API info
     path('admin/', admin.site.urls),
     path('api/', api.urls),  # Django Ninja API endpoints
     path('api/badges/', badge_api.urls),  # Badge rewards API

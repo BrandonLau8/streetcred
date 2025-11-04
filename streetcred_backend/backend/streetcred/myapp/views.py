@@ -9,6 +9,21 @@ from .locater import identify_location
 
 # Create your views here.
 
+def home(request):
+    """API homepage with links to documentation"""
+    return JsonResponse({
+        "message": "Welcome to StreetCred API",
+        "version": "1.0.0",
+        "endpoints": {
+            "api_docs": "/api/docs",
+            "badge_docs": "/api/badges/docs",
+            "admin": "/admin/",
+            "locations": "/api/locations",
+            "map": "/map/",
+        },
+        "status": "online"
+    })
+
 def get_users(request):
     supabase = get_supabase_client()
     response = supabase.table('users').select('*').execute()
